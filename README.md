@@ -1,0 +1,1 @@
+- Potrebno urediti, da se pri preverjanju prostega porta, preveri, če uporabnik slučajno že ima port!
