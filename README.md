@@ -1,2 +1,3 @@
 - Potrebno urediti, da se pri preverjanju prostega porta, preveri, če uporabnik slučajno že ima port!
 - Ko uporabnik pošlje datoteko, se preveri, če je to prva datoteka (nekje na strani se nevidno shrani naključna vrednost, port je izpisan) in še enkrat se preveri, če je dodeljeni PORT še prost. Če ni, se ga obvesti z odgovorom.
+- ALTERNATIVA: Ko uporabnik pošlje datoteko, se preveri, ali port in naključna vrednost predstavljata ime mape na serverju!
