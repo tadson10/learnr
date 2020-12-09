@@ -12,3 +12,6 @@
 
 - mogoče bi pri uporabniku hranili, kdaj je rezerviral PORT, da se ve, ali še obstaja...ker se po 1h izbriše (to še ni nujna zadeva).
 - Ko uporabnik, pošlje datoteko, mora mapa ŽE OBSTAJATI, drugače nima rezeriranega PORT-a in mora ponovno rezervirati PORT!!!!!!!!! 
+
+- CAPTION imajo vse datoteke za isti exercise ISTI :heavy_check_mark:
+- LABEL pa je sestavljen {ID}-CAPTION :heavy_check_mark:
