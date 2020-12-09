@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = FALSE)
 Write the R code required to add two plus two:
 
 ```{js}
-console.log("BLA");
+
 ```
 
 ### Exercise with Code
@@ -29,13 +29,13 @@ console.log("BLA");
 *exercise.lines = 5, exercise.completion = FALSE*
 Now write a function that adds any two numbers and then call it:
 
-```{r prvaJS, exercise=TRUE, exercise.timelimit = 10, exercise.lines = 5, exercise.cap = "app.js", exercise.eval = FALSE} 
+```{r JS-prva-app_js, exercise=TRUE, exercise.timelimit = 10, exercise.lines = 50, exercise.cap = "prva", exercise.eval = FALSE} 
 add <- function() {
   
 }
 ```
 
-```{r add-function2, exercise=TRUE, exercise.timelimit = 10, exercise.lines = 5, exercise.cap = "NEKI2"} 
+```{r JS-prva-index_html, exercise=TRUE, exercise.timelimit = 10, exercise.lines = 5, exercise.cap = "prva"} 
 add <- function() {
   
 }
@@ -50,11 +50,11 @@ add <- function() {
 Modify the following code to limit the number of rows printed to 5:
 
 ```{r print-limit, exercise=TRUE, exercise.eval=TRUE}
-mtcars
+
 ```
 
 ```{r print-limit-hint}
-head(mtcars)
+
 ```
 
 ### Quiz

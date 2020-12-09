@@ -846,6 +846,51 @@ Tutorial.prototype.$exerciseEditor = function (label) {
   return this.$exerciseForLabel(label).find('.tutorial-exercise-code-editor');
 };
 
+// Doda vrstico z zavihki za posamezno JS nalogo
+function dodajZavihke(caption) {
+  var zavihki = $(`<div id="${caption}-tabs" class="tab">
+                  <button class="tablinks" onclick="odpriZavihek(this, 'JS-${caption}-app_js', '${caption}')">app.js</button>
+                  <button class="tablinks" onclick="odpriZavihek(this, 'JS-${caption}-index_html', '${caption}')">index.html</button>
+                  <button class="tablinks" onclick="odpriZavihek(this, 'JS-${caption}-styles_css', '${caption}')">styles.css</button>
+                  <button class="tablinks" onclick="odpriZavihek(this, 'JS-${caption}-script_js', '${caption}')">script.js</button>
+                </div>`);
+
+  console.log(zavihki);
+  // dobimo prvo datoteko naloge
+  var prvaDatotekaNaloge = $($('[data-caption="' + caption + '"]')[0]);
+  prvaDatotekaNaloge.before(zavihki);
+
+  // DIV z gumbi zavihkov
+  var gumbiZaZavihke = document.getElementById(caption + '-tabs');
+  // gumbi zavihkov
+  var tablink = $(gumbiZaZavihke.getElementsByClassName("tablinks")[0]);
+  tablink.click();
+}
+
+// Odpre JS zavihek glede na label in caption
+function odpriZavihek(button, label, caption) {
+  var i, tabcontent, tablinks;
+
+  // skrije vse datoteke
+  tabcontent = $('[data-caption="' + caption + '"]');
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // DIV z gumbi zavihkov
+  var gumbiZaZavihke = document.getElementById(caption + '-tabs');
+  // gumbi zavihkov
+  tablinks = gumbiZaZavihke.getElementsByClassName("tablinks");
+  // odstranimo class active z gumbov
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // izbranega prikažemo in markiramo gumb
+  $('[data-label="' + label + '"]').css("display", "block");
+  button.className += " active";
+}
+
 Tutorial.prototype.$initializeExerciseEditors = function () {
 
   // alias this
@@ -857,11 +902,16 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     var label = exercise.attr('data-label');
     var caption = exercise.attr('data-caption');
 
+
     // helper to create an id
     function create_id(suffix) {
       return "tutorial-exercise-" + label + "-" + suffix;
     }
 
+    console.log("EXERCISE");
+    console.log(exercise);
+    // exercise.addClass("tabcontent");
+    // exercise.append(exercise);
 
     // when we receive focus hide solutions in other exercises
     exercise.on('focusin', function () {
@@ -899,24 +949,58 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     var input_div = $('<div class="tutorial-exercise-input panel panel-default"></div>');
     input_div.attr('id', create_id('input'));
 
+    /********************************************* */
+    var imeNaloge = label;
+    console.log("IME NALOGE: " + imeNaloge);
+    // var jeNalogaJS = ['app_js', 'index_html', 'styles_css', 'script_js'].find(a =>a.includes(label));
+    var jeNalogaJS = imeNaloge.startsWith("JS") && (imeNaloge.includes('app_js') || imeNaloge.includes('index_html') || imeNaloge.includes('styles_css') || imeNaloge.includes('script_js'));
+    var jeAppJS = imeNaloge.includes('app_js');
+    if (jeAppJS)
+      dodajZavihke(caption)
+    /********************************************* */
+    console.log("LOLEK BOLEK " + jeNalogaJS + ", " + jeAppJS);
+
     // creating heading
     var panel_heading = $('<div class="panel-heading tutorial-panel-heading"></div>');
-    panel_heading.text(caption);
+
+    console.log("JA NE " + jeNalogaJS);
+    // Če gre za JS nalogo
+    if (jeNalogaJS)
+      panel_heading.text(label.split("-")[2].replace('_', '.'));
+    else
+      panel_heading.text(caption);
     input_div.append(panel_heading);
 
     // create body
     var panel_body = $('<div class="panel-body"></div>');
     input_div.append(panel_body);
 
+
+    console.log(jeNalogaJS + ": " + imeNaloge);
     // function to add a submit button
     function add_submit_button(icon, style, text, check) {
-      //console.log("SKRIPTA " + exercise.attributes);
-      //console.log("SKRIPTA2 " + exercise.attr("data-caption"));
 
-      if (exercise.attr("data-caption") != 'app.js') {
-        var button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run ' +
-          'pull-right"></a>');
-        button.append($('<i class="fa ' + icon + '"></i>'));
+      var button;
+      if (!jeNalogaJS) {
+        button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run ' + 'pull-right"></a>');
+      }
+      else {
+        //thiz.$jeziki(exercise);
+        console.log("ZAČNI");
+        if (text == 'Run code') {
+          button = $('<a id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-run-js ' + 'pull-right"></a>');
+        }
+
+        else if (text == 'Send file') {
+          button = $('<a id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-send-file ' + 'pull-right"></a>');
+        }
+
+        else if (text == 'Get port') {
+          button = $('<a onclick="getFreePort(this)" id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-get-port ' + 'pull-right"></a>');
+        }
+
+
+        /*button.append($('<i class="fa ' + icon + '"></i>'));
         button.attr('type', 'button');
         button.append(' ' + text);
         var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -930,81 +1014,54 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
 
         button.on('click', function () {
-
-          thiz.$removeSolution(exercise);
-          thiz.$showExerciseProgress(label, button, true);
-        });
-      }
-      else {
-        //thiz.$jeziki(exercise);
-        console.log("ZAČNI");
-
-
-        var button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run-js ' +
-          'pull-right"></a>');
-        button.append($('<i class="fa ' + icon + '"></i>'));
-        button.attr('type', 'button');
-        button.append(' ' + 'POŽENI');
-        var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        var title = text;
-        if (!check)
-          title = title + " (" + (isMac ? "Cmd" : "Ctrl") + "+Shift+Enter)";
-        button.attr('title', title);
-        if (check)
-          button.attr('data-check', '1');
-        button.attr('data-icon', icon);
-
-
-        button.on('click', function () {
           thiz.$removeSolution(exercise);
           //thiz.$showExerciseProgress(label, button, true);
-          jeziki();
-        });
+          // jeziki();
+          posljiDatoteko();
+        });*/
       }
-      /*
-            var button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run' +
-              'pull-right">Poženi</a>');
-      
-            button.append($('<i class="fa ' + icon + '"></i>'));
-            button.attr('type', 'button');
-      
-            var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-            var title = text;
-            if (!check)
-              title = title + " (" + (isMac ? "Cmd" : "Ctrl") + "+Shift+Enter)";
-            button.attr('title', title);
-            if (check)
-              button.attr('data-check', '1');
-            button.attr('data-icon', icon);
-            button.on('click', function () {
-              jeziki();
-              thiz.$removeSolution(exercise);
-              thiz.$showExerciseProgress(label, button, true);
-            });*/
+
+      button.append($('<i class="fa ' + icon + '"></i>'));
+      button.attr('type', 'button');
+      button.append(' ' + text);
+      var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      var title = text;
+      if (!check && !jeNalogaJS)
+        title = title + " (" + (isMac ? "Cmd" : "Ctrl") + "+Shift+Enter)";
+      button.attr('title', title);
+      if (check && !jeNalogaJS)
+        button.attr('data-check', '1');
+      button.attr('data-icon', icon);
+
+
+      button.on('click', function () {
+
+        thiz.$removeSolution(exercise);
+        if (!jeNalogaJS) {
+          thiz.$showExerciseProgress(label, button, true);
+        }
+        else {
+          console.log(button);
+          //jeziki();
+          if (text == 'Get port') {
+            console.log("GET PORT");
+            console.log(button.parentElement);
+            //getFreePort(this);
+          }
+          else if (text == 'Run code') {
+            console.log("RUN CODE");
+            runJSCode();
+          }
+          //Datoteko();
+        }
+      });
+
       panel_heading.append(button);
       return button;
     }
 
 
-
-    jeziki = function () {
-      //var xhttp = new XMLHttpRequest();
-      /*xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          // Typical action to be performed when the document is ready:
-          document.getElementById("demo").innerHTML = xhttp.responseText;
-        }
-      };*/
-      /*xhttp.open("GET", "http://192.168.1.106/jobe/index.php/restapi/languages", false);
-      xhttp.send();
-      var jeziki = JSON.parse(xhttp.responseText);
-      console.log("POŽENI " + jeziki[0][1]);
-      console.log("POŽENI " + xhttp.responseText);*/
-
-      console.log("POŽENI " + document.getElementsByClassName("btn-tutorial-run-js").length);
-      // console.log("POŽENI " + exercise.attr('data-lines'));
-      // console.log("POŽENI " + exercise.attr('data-caption'));
-    }
+    //console.log("BASE64: " + b64Utf8("Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7"));
 
 
     // create submit answer button if checks are enabled
@@ -1012,12 +1069,21 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       add_submit_button("fa-check-square-o", "btn-primary", "Submit Answer", true);
 
     // create run button
-    var run_button = add_submit_button("fa-play", "btn-success", "Run Code111", false);
+    var run_button;
+    if (jeAppJS || !jeNalogaJS)
+      run_button = add_submit_button("fa-play", "btn-success", "Run code", false);
+
+    // Če je JS naloga, dodamo še 2 gumba
+    if (jeNalogaJS) {
+      add_submit_button("fa-play", "btn-success", "Send file", false);
+      if (jeAppJS)
+        add_submit_button("fa-play", "btn-success", "Get port", false);
+    }
 
     // create code div and add it to the input div
     var code_div = $('<div class="tutorial-exercise-code-editor"></div>');
     // Če gre za JS
-    if (exercise.attr("data-label").includes("JS"))
+    if (exercise.attr("data-label").startsWith("JS-"))
       code_div = $('<div class="tutorial-exercise-code-editor-js"></div>');
 
     var code_id = create_id('code-editor');
@@ -1064,23 +1130,27 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     };
 
     // bind execution keys
-    function bindExecutionKey(name, key) {
-      var macKey = key.replace("Ctrl+", "Command+");
-      editor.commands.addCommand({
-        name: name,
-        bindKey: { win: key, mac: macKey },
-        exec: function (editor) {
-          run_button.trigger('click');
-        }
-      });
+    // Le če gre za R nalogo oziroma je JS naloga app.js
+    if (jeAppJS || !jeNalogaJS) {
+      function bindExecutionKey(name, key) {
+        var macKey = key.replace("Ctrl+", "Command+");
+        editor.commands.addCommand({
+          name: name,
+          bindKey: { win: key, mac: macKey },
+          exec: function (editor) {
+            run_button.trigger('click');
+          }
+        });
+      }
+      bindExecutionKey("execute1", "Ctrl+Enter");
+      bindExecutionKey("execute2", "Ctrl+Shift+Enter");
     }
-    bindExecutionKey("execute1", "Ctrl+Enter");
-    bindExecutionKey("execute2", "Ctrl+Shift+Enter");
 
     // re-focus the editor on run button click
-    run_button.on('click', function () {
-      editor.focus();
-    });
+    if (jeAppJS || !jeNalogaJS)
+      run_button.on('click', function () {
+        editor.focus();
+      });
 
     // mange ace height as the document changes
     var updateAceHeight = function () {
@@ -1115,7 +1185,161 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
   });
 };
 
+//Dekodiranje base64 -> tekst
+var b64Utf8 = function (niz) {
+  return decodeURIComponent(
+    Array.prototype.map
+      .call(atob(niz), (znak) => {
+        return "%" + ("00" + znak.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
+}
 
+var streznik = "192.168.1.74";
+
+var jeziki = function () {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function () {
+    console.log("ODGOVOR " + this.readyState);
+    if (this.readyState == 4) {
+      // Typical action to be performed when the document is ready:
+      //var jeziki = JSON.parse(xhttp.responseText);
+      // console.log("POŽENI " + jeziki[0][1]);
+      console.log("POŽENI " + this.status + ", " + this.responseText);
+      if (xhttp.responseText)
+        return JSON.parse(xhttp.responseText);
+
+      return "";
+    }
+  };
+  xhttp.open("GET", "http://" + streznik + "/jobe/index.php/restapi/languages", true);
+  xhttp.send();
+
+  // console.log("POŽENI " + document.getElementsByClassName("btn-tutorial-run-js").length);
+  // console.log("POŽENI " + exercise.attr('data-lines'));
+  //console.log("POŽENI " + exercise.attr('data-caption'));
+}
+
+var posljiDatoteko = function (code) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("PUT", 'http://' + streznik + '/jobe/index.php/restapi/file/test', true);
+
+  //Send the proper header information along with the request
+  xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+  xhr.onreadystatechange = function () { // Call a function when the state changes.
+    console.log("PUT FILE " + this.responseText + ", " + this.status);
+    if (this.readyState === XMLHttpRequest.DONE) {
+      // Request finished. Do processing here.
+      console.log("PUT FILE DONE" + this.responseText + ", " + this.status);
+    }
+  }
+  // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
+  var datoteka = {
+    "file_contents": btoa(code),
+    "dir": "proba"
+  };
+  xhr.send(JSON.stringify(datoteka));
+  // xhr.send(new Int8Array()); 
+  // xhr.send(document);
+}
+
+var runJSCode = function (port, dir) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", 'http://' + streznik + '/jobe/index.php/restapi/runs', true);
+
+  //Send the proper header information along with the request
+  xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+  xhr.onreadystatechange = function () { // Call a function when the state changes.
+    //console.log("RUN CODE " + this.responseText + ", " + this.status);
+    if (this.readyState === XMLHttpRequest.DONE) {
+      // Request finished. Do processing here.
+      console.log("RUN CODE DONE" + this.responseText + ", " + this.status);
+    }
+  }
+  // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
+  var body = {
+    "run_spec": {
+      "language_id": "nodejs",
+      "sourcefilename": "test",
+      "sourcecode": "",
+      "dir": "proba"
+    }
+  };
+
+  xhr.send(JSON.stringify(body));
+}
+
+
+var getFreePort = function (button) {
+  // Dodamo spinner in onemogočimo gumb
+  var spinner = 'fa-spinner fa-spin fa-fw';
+  console.log(button.children[0]);
+  var runIcon = button.children[0];
+  $(runIcon).removeClass(button.getAttribute('data-icon'));
+  $(runIcon).addClass(spinner);
+  $(button).addClass('disabled');
+
+  console.log(button.parentElement);
+  var orodnaVrstica = button.parentElement;
+
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function () {
+    console.log("ODGOVOR " + this.readyState);
+    if (this.readyState == 4) {
+      // Izbrišemo element s portom, če že obstaja
+      var list = orodnaVrstica.getElementsByClassName("portNumber");
+      if (list.length > 0)
+        list[0].parentNode.removeChild(list[0]);
+
+      // Povrnemo stanje gumba
+      $(runIcon).removeClass(spinner);
+      $(button).removeClass('disabled');
+      $(runIcon).addClass(button.getAttribute('data-icon'));
+
+      // Typical action to be performed when the document is ready:
+      //var jeziki = JSON.parse(xhttp.responseText);
+      // console.log("POŽENI " + jeziki[0][1]);
+      console.log("POŽENI " + this.status);
+      console.log(xhttp.responseText);
+
+      // Dobili smo odgovor JOBE sandbox-a
+      if (xhttp.responseText) {
+        var port = JSON.parse(xhttp.responseText).port;
+        // Ne dobimo vrednosti prostega porta - vsi so zasedeni
+        if (!port) {
+          var sporocilo = JSON.parse(xhttp.responseText).sporocilo;
+          alert(sporocilo);
+        }
+
+        else {
+          // Pridobimo PORT
+          // port = JSON.parse(xhttp.responseText).port.toString();
+          console.log(port);
+          console.log(orodnaVrstica.getElementsByClassName("portNumber"));
+          console.log(orodnaVrstica.children);
+
+
+
+          // Vstavimo element s PORT-om
+          var htmlPort = document.createElement("span");
+          htmlPort.innerHTML = "PORT: " + port;
+          htmlPort.className = "pull-right portNumber";
+          htmlPort.id = "portNumber";
+          orodnaVrstica.appendChild(htmlPort);
+        }
+      }
+      else {
+        alert("JOBE sandbox is not available at the moment! Try again later!");
+      }
+
+    }
+  };
+  xhttp.open("GET", "http://" + streznik + "/jobe/index.php/restapi/free_ports", true);
+  xhttp.send();
+}
 
 /* Exercise solutions */
 
@@ -1384,12 +1608,18 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
   $.extend(exerciseInputBinding2, {
 
     find: function (scope) {
-      document.getElementsByClassName("example");
+      //console.log("SCOPE: ");
+      //console.dir(scope);
+      console.log(scope);
+      console.log($(scope).find('.tutorial-exercise-code-editor-js'));
+
+      // document.getElementsByClassName("example");
       return $(scope).find('.tutorial-exercise-code-editor-js');
     },
 
     getValue: function (el) {
       console.log("getValue - INPUT 2");
+      console.log(el);
       // return null if we haven't been clicked and this isn't a restore
       if (!this.clicked && !this.restore)
         return null;
@@ -1402,7 +1632,26 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
 
       // get the code from the editor
       var editor = ace.edit($(el).attr('id'));
-      value.code = editor.getSession().getValue();
+      // value.code = editor.getSession().getValue();
+
+      console.log("INPUT1: " + btoa(editor.getSession().getValue()));
+      console.log("INPUT2: " + b64Utf8(btoa(editor.getSession().getValue())));
+      // ct$eval(" var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+      //                         var xhttp = new XMLHttpRequest();
+      //                         xhttp.open('GET', 'http://192.168.1.106/jobe/index.php/restapi/languages', false);
+      //                         xhttp.send();
+      //                         var jeziki = JSON.parse(xhttp.responseText);
+      //                         // console.log('POŽENI ' + jeziki[0][1]);
+      //                         console.log('POŽENI ' + xhttp.responseText);")
+
+      /*value.code =
+        `ct <- V8::new_context()
+        ct$eval("var a = 1")
+        ct$get("a")
+        ct$eval("` + editor.getSession().getValue() + `")`;
+*/
+      posljiDatoteko(editor.getSession().getValue());
+      //runJSCode();
       console.log("BLA BLA vsebina " + value.code);
       // get the preserved chunk options (if any)
       var options_script = thiz.$exerciseContainer(el).find('script[data-opts-chunk="1"]');
@@ -1441,11 +1690,13 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
 
     subscribe: function (el, callback) {
       console.log("getValue - SUBSCRIBE 2");
+      console.log(el);
       var binding = this;
       this.runButtons(el).on('click.exerciseInputBinding2', function (ev) {
         binding.restore = false;
         binding.clicked = true;
         binding.check = ev.target.hasAttribute('data-check');
+        console.log(ev);
         callback(true);
       });
       $(el).on('restore.exerciseInputBinding2', function (ev, options) {
@@ -1462,7 +1713,7 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
 
     runButtons: function (el) {
       var exercise = thiz.$exerciseContainer(el);
-      return exercise.find('.btn-tutorial-run-js');
+      return exercise.find('.btn-tutorial-send-file');
     },
 
     restore: false,

@@ -9,6 +9,7 @@
 #' @importFrom withr with_envvar
 #' @importFrom rprojroot find_root is_r_package
 #' @importFrom shiny reactiveValues observeEvent req isolate invalidateLater isolate observe reactive
+#' @import V8
 NULL
 
 # install knitr hooks when package is attached to search path
