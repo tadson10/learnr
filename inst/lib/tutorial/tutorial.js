@@ -1167,8 +1167,10 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     output_div.attr('id', create_id('output'));
     output_frame.append(output_div);
 
+    console.log("ACE EDITOR: " + code_id + ", " + code);
     // activate the ace editor
     var editor = thiz.$attachAceEditor(code_id, code);
+    console.log(editor.session);
 
     // get setup_code (if any)
     var setup_code = null;
@@ -1179,8 +1181,8 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       setup_code = thiz.$exerciseSupportCode(label + "-setup");
 
     // use code completion
-    var completion = exercise.attr('data-completion') === "1" && !isExerciseJS;
-    var diagnostics = exercise.attr('data-diagnostics') === "1" && !isExerciseJS;
+    var completion = true; //exercise.attr('data-completion') === "1";
+    var diagnostics = true;//exercise.attr('data-diagnostics') === "1";
 
     // support startover
     var startover_code = exercise.attr('data-startover') === "1" ? code : null;
@@ -1289,6 +1291,20 @@ var languages = function () {
 }
 
 var sendFIle = function (code, button, fileName) {
+  // We get reservation data from local storage and we pass them with request
+  var apiKey = window.localStorage.getItem("apiKey");
+  var credentials = window.localStorage.getItem("credentials");
+  if (credentials == null || apiKey == null) {
+    console.log("credentials");
+    alert("Before you can send file, you need to reserve port.");
+    return;
+  }
+
+  console.log(credentials);
+  var body = JSON.parse(credentials)
+  if (body != null)
+    body.file_contents = btoa(unescape(encodeURIComponent(code)));
+
   // Add spinner to button
   var spinner = 'fa-spinner fa-spin fa-fw';
   var runIcon = button.children[0];
@@ -1320,12 +1336,7 @@ var sendFIle = function (code, button, fileName) {
   //   "dir": "proba"
   // };
 
-  // We get reservation data from local storage and we pass them with request
-  var apiKey = window.localStorage.getItem("apiKey");
-  var credentials = window.localStorage.getItem("credentials");
-  var body = JSON.parse(credentials)
-  if (body != null)
-    body.file_contents = btoa(unescape(encodeURIComponent(code)));
+
   console.log(body);
   // If there is no apiKEy in local storage, then apiKey == null
   // If it is empty - apiKey == ""
@@ -1336,6 +1347,16 @@ var sendFIle = function (code, button, fileName) {
 }
 
 var runJSCode = function (button) {
+  // We get reservation data from local storage and we pass them with request
+  var apiKey = window.localStorage.getItem("apiKey");
+  var credString = window.localStorage.getItem("credentials");
+  var credentials = JSON.parse(credString);
+  if (credString == null || apiKey == null) {
+    console.log("credentials");
+    alert("Before you can send file, you need to reserve port.");
+    return;
+  }
+
   // Add spinner to button
   var spinner = 'fa-spinner fa-spin fa-fw';
   var runIcon = button.children[0];
@@ -1369,12 +1390,9 @@ var runJSCode = function (button) {
     }
   };
 
-  // We get reservation data from local storage and we pass them with request
-  var apiKey = window.localStorage.getItem("apiKey");
-  var credString = window.localStorage.getItem("credentials");
-  var credentials = JSON.parse(credString);
   if (credentials != null)
     jQuery.extend(body.run_spec, credentials);
+
   console.log(body);
   // If there is no apiKEy in local storage, then apiKey == null
   // If it is empty - apiKey == ""
@@ -1403,6 +1421,15 @@ function buttonExecutionEnd(button, runIcon, spinner) {
 
 // Stop execution
 function stopExecution(button) {
+  // We get reservation data from local storage and we pass them with request
+  var apiKey = window.localStorage.getItem("apiKey");
+  var credentials = window.localStorage.getItem("credentials");
+  if (credentials == null || apiKey == null) {
+    console.log("credentials");
+    alert("Before you can send file, you need to reserve port.");
+    return;
+  }
+
   // Add spinner and disable button
   var spinner = 'fa-spinner fa-spin fa-fw';
   var runIcon = button.children[0];
@@ -1430,9 +1457,7 @@ function stopExecution(button) {
 
     }
   }
-  // We get reservation data from local storage and we pass them with request
-  var apiKey = window.localStorage.getItem("apiKey");
-  var credentials = window.localStorage.getItem("credentials");
+
 
   xhttp.open("POST", "http://" + server + "/jobe/index.php/restapi/stop", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
@@ -1445,6 +1470,8 @@ function stopExecution(button) {
 }
 
 var getFreePort = function (button) {
+  bootbox.alert("You must complete the " + " in this section before continuing.");
+
   // Add spinner and disable button
   var spinner = 'fa-spinner fa-spin fa-fw';
   // console.log(button.children[0]);
