@@ -1486,11 +1486,11 @@ var getFreePort = function (button) {
       if (xhttp.responseText) {
         var port = JSON.parse(xhttp.responseText).port;
         var jobeUser = JSON.parse(xhttp.responseText).jobeUser;
-        var nakljucnaVrednost = JSON.parse(xhttp.responseText).nakljucnaVrednost;
+        var randomValue = JSON.parse(xhttp.responseText).randomValue;
 
         // We don't get free port - all ports are used
-        if (!port || !jobeUser || !nakljucnaVrednost) {
-          var message = JSON.parse(xhttp.responseText).sporocilo;
+        if (!port || !jobeUser || !randomValue) {
+          var message = JSON.parse(xhttp.responseText).message;
           alert(message);
         }
         // We get FREE PORT
@@ -1509,7 +1509,7 @@ var getFreePort = function (button) {
           // htmlPort.id = "portNumber";
           // orodnaVrstica.appendChild(htmlPort);
           //save to local storage
-          addPortToLocalStorage(port, jobeUser, nakljucnaVrednost);
+          addPortToLocalStorage(port, jobeUser, randomValue);
 
           // We add HTML element with PORT
           addPortHtml();
@@ -1564,7 +1564,7 @@ function addPortHtml() {
 
 }
 
-function addPortToLocalStorage(port, jobeUser, nakljucnaVrednost) {
+function addPortToLocalStorage(port, jobeUser, randomValue) {
   //če je potekel čas,
   // var trenutniPort = JSON.parse(window.localStorage.getItem('port'));
   // if (trenutniPort.expiry <= new Date().getTime())
@@ -1573,7 +1573,7 @@ function addPortToLocalStorage(port, jobeUser, nakljucnaVrednost) {
   var objStorage = {
     jobeUser: jobeUser,
     port: port,
-    nakljucnaVrednost: nakljucnaVrednost,
+    randomValue: randomValue,
     expiry: new Date().getTime() + 1000 * 60 * 60
   };
   window.localStorage.setItem('credentials', JSON.stringify(objStorage));
