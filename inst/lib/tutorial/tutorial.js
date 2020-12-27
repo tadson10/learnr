@@ -7,7 +7,8 @@ $(document).ready(function () {
   // register autocompletion if available
   if (typeof TutorialCompleter !== "undefined")
     tutorial.$completer = new TutorialCompleter(tutorial);
-
+  // console.log("tutorial.$completer");
+  // console.log(tutorial);
   // register diagnostics if available
   if (typeof TutorialDiagnostics !== "undefined")
     tutorial.$diagnostics = new TutorialDiagnostics(tutorial);
@@ -715,6 +716,8 @@ Tutorial.prototype.$initializeExercises = function () {
   fillInputsWithApiKey();
   // We add HTML element with PORT
   addPortHtml();
+  // Simulate click on first tab for every JS exercise
+  openFirstTab();
 };
 
 Tutorial.prototype.$exerciseForLabel = function (label) {
@@ -841,6 +844,19 @@ Tutorial.prototype.$attachAceEditor = function (target, code) {
   editor.session.setMode("ace/mode/r");
   editor.session.getSelection().clearSelection();
   editor.setValue(code, -1);
+  // editor.setOptions({
+  //   enableBasicAutocompletion: true,
+  //   enableSnippets: true,
+  //   enableLiveAutocompletion: true
+  // });
+
+  // editor.commands.on("afterExec", function (e) {
+  //   if (e.command.name == "insertstring" && /^[\w.]$/.test(e.args)) {
+  //     editor.execCommand("startAutocomplete")
+  //   }
+  // })
+  console.log("editor.getOptions()");
+  console.log(editor.getOptions());
   return editor;
 };
 
@@ -851,122 +867,6 @@ Tutorial.prototype.$exerciseEditor = function (label) {
   return this.$exerciseForLabel(label).find('.tutorial-exercise-code-editor');
 };
 
-// // Get ApiKey from local storage and fill all inputs with it
-function fillInputsWithApiKey() {
-  var apiKey = window.localStorage.getItem("apiKey");
-  // nastavimo vsem inputom isti api key
-  var allApiKeyInputs = document.getElementsByClassName("apiKey");
-  for (var i = 0; i < allApiKeyInputs.length; i++) {
-    allApiKeyInputs[i].value = apiKey;
-  }
-}
-
-// iz local storage prebere shranjeno vrednost in jo vpiše v inpute
-function preberiAPortVHtml() {
-  var credentials = window.localStorage.getItem("credentials");
-  if (credentials != null) {
-    var port = credentials.port;
-
-    // nastavimo vsem 
-    var allApiKeyInputs = document.getElementsByClassName("apiKey");
-    for (var i = 0; i < allApiKeyInputs.length; i++) {
-      allApiKeyInputs[i].value = apiKey;
-    }
-  }
-
-
-}
-
-// v vsa polja za API KEY vpišemo novo vrednost in shranimo v LOCAL STORAGE
-function shraniApiKey(button) {
-  // Pridobimo api key
-  var apiKey = button.parentElement.getElementsByClassName("apiKey")[0].value;
-
-  // local storage
-  window.localStorage.setItem("apiKey", apiKey);
-
-  // Get ApiKey from local storage and fill all inputs with it
-  fillInputsWithApiKey();
-
-  // nastavimo vsem inputom isti api key
-  // var allApiKeyInputs = document.getElementsByClassName("apiKey");
-  // for (var i = 0; i < allApiKeyInputs.length; i++) {
-  //   allApiKeyInputs[i].value = apiKey;
-  // }
-
-  // Nastavimo isto vrednost vsem inputom za api key
-  console.log(apiKey);
-}
-
-// Delete ApiKey from all input fields
-function deleteApiKey() {
-  // get all input fields with apiKey
-  var allApiKeyInputs = document.getElementsByClassName("apiKey");
-  for (var i = 0; i < allApiKeyInputs.length; i++) {
-    allApiKeyInputs[i].value = "";
-  }
-
-  // local storage
-  window.localStorage.removeItem("apiKey");
-}
-
-// create HTML element for API KEY
-function addApiKeyHtml() {
-  return `<span>
-            <label for="apiKey">API KEY:</label>
-            <input type="text" name="apiKey" class="apiKey" width: 260px;>
-            <button type="button" onclick="shraniApiKey(this)">Shrani</button>
-            <button type="button" onclick="deleteApiKey()">Izbrisi</button>
-          <span>`;
-}
-// Add input field for API KEY and row with tabs for every exercise
-function addApiKeyAndTabs(caption) {
-  var apiKey = addApiKeyHtml();
-  var tabs = $(`${apiKey}<div id="${caption}-tabs" class="tab">                
-                  <button class="tablinks" onclick="openFileTab(this, 'JS-${caption}-app_js', '${caption}')">app.js</button>
-                  <button class="tablinks" onclick="openFileTab(this, 'JS-${caption}-index_html', '${caption}')">index.html</button>
-                  <button class="tablinks" onclick="openFileTab(this, 'JS-${caption}-styles_css', '${caption}')">styles.css</button>
-                  <button class="tablinks" onclick="openFileTab(this, 'JS-${caption}-script_js', '${caption}')">script.js</button>
-                </div>`);
-
-  console.log(tabs);
-
-
-  // get first file of exercise with `caption`
-  var firstFileOfExercise = $($('[data-caption="' + caption + '"]')[0]);
-  firstFileOfExercise.before(tabs);
-
-  // SIMULATION OF CLICK ON FIRST BUTTON
-  // DIV with tab buttons
-  var tabButtons = document.getElementById(caption + '-tabs');
-  // buttons for tabs
-  var tablink = $(tabButtons.getElementsByClassName("tablinks")[0]);
-  tablink.click();
-}
-
-// Open JS tab depending on label and caption
-function openFileTab(button, label, caption) {
-  var i, tabcontent, tablinks;
-
-  // Hide all files
-  tabcontent = $('[data-caption="' + caption + '"]');
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-
-  // DIV with tab buttons
-  var tabButtons = document.getElementById(caption + '-tabs');
-  // buttons for tabs
-  tablinks = tabButtons.getElementsByClassName("tablinks");
-  // remove class active from buttons
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-
-  // show the chosen tab and mark the button/tab as active
-  $('[data-label="' + label + '"]').css("display", "block");
-  button.className += " active";
-}
 
 Tutorial.prototype.$initializeExerciseEditors = function () {
 
@@ -977,8 +877,10 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
     // capture label and caption
     var label = exercise.attr('data-label');
-    var caption = exercise.attr('data-caption');
-
+    var caption = exercise.attr('data-caption'); // With data-type="js" represents file name
+    var exerciseType = exercise.attr('data-type'); // Type of exercise (set to "r" when left empty) - special behaviour when = "js"
+    var serverIP = exercise.attr('data-serverIP'); // IP of JOBE server for JS code execution - when empty code is executed at client side
+    var exerciseName = exercise.attr('data-id'); // Name of exercise - used for JS to join files that belong to same exercise into TABS
 
     // helper to create an id
     function create_id(suffix) {
@@ -986,7 +888,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     }
 
     console.log("EXERCISE");
-    console.log(exercise);
+    console.log(exerciseType + ", " + serverIP + ", " + exerciseName);
     // exercise.addClass("tabcontent");
     // exercise.append(exercise);
 
@@ -1027,28 +929,31 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     input_div.attr('id', create_id('input'));
 
     /********************************************* */
-    var fileLabel = label;
-    console.log("IME NALOGE: " + fileLabel);
+    // var fileLabel = label;
+    console.log("IME NALOGE: " + caption);
     // var isExerciseJS = ['app_js', 'index_html', 'styles_css', 'script_js'].find(a =>a.includes(label));
-    var isExerciseJS = fileLabel.startsWith("JS") && (fileLabel.includes('app_js') || fileLabel.includes('index_html') || fileLabel.includes('styles_css') || fileLabel.includes('script_js'));
-    var isAppJS = fileLabel.includes('app_js');
+    var isExerciseJS = exerciseType == "js";
+    var isAppJS = caption == 'app.js' && isExerciseJS;
     if (isAppJS)
-      addApiKeyAndTabs(caption)
+      addApiKeyAndFirstTab(exerciseName, label);
+    else if (!isAppJS && isExerciseJS)
+      addTab(exerciseName, caption, label);
     /********************************************* */
     console.log("LOLEK BOLEK " + isExerciseJS + ", " + isAppJS);
 
     // creating heading
-    if (!isExerciseJS)
-      var panel_heading = $('<div class="panel-heading tutorial-panel-heading"></div>');
-    else
+    if (isExerciseJS)
       var panel_heading = $('<div class="toolbar panel-heading tutorial-panel-heading"></div>');
+    else
+      var panel_heading = $('<div class="panel-heading tutorial-panel-heading"></div>');
+
 
     console.log("JA NE " + isExerciseJS);
     // If it is JS exercise
-    if (isExerciseJS)
-      panel_heading.text(label.split("-")[2].replace('_', '.'));
-    else
-      panel_heading.text(caption);
+    // if (isExerciseJS)
+    //   panel_heading.text(label.split("-")[2].replace('_', '.'));
+    // else
+    panel_heading.text(caption);
     input_div.append(panel_heading);
 
     // create body
@@ -1056,32 +961,32 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     input_div.append(panel_body);
 
 
-    console.log(isExerciseJS + ": " + fileLabel);
+    console.log(isExerciseJS);
     // function to add a submit button
     function add_submit_button(icon, style, text, check) {
 
       var button;
-      if (!isExerciseJS) {
-        button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run ' + 'pull-right"></a>');
-      }
-      else {
+      if (isExerciseJS) {
         //thiz.$languages(exercise);
         console.log("ZAČNI");
         if (text == 'Run code') {
-          button = $('<a onclick="runJSCode(this)" id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-run-js ' + 'pull-right"></a>');
+          button = $(`<a onclick="runJSCode(this, '${serverIP}')"  class="btn ${style} btn-xs btn-tutorial-run-js pull-right"></a>`);
         }
 
         else if (text == 'Send file') {
-          button = $('<a id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-send-file ' + 'pull-right"></a>');
+          button = $('<a  class="btn ' + style + ' btn-xs btn-tutorial-send-file ' + 'pull-right"></a>');
         }
 
         else if (text == 'Get port') {
-          button = $('<a onclick="getFreePort(this)" id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-get-port ' + 'pull-right"></a>');
+          button = $(`<a onclick="getFreePort(this, '${serverIP}')"  class="btn ${style} btn-xs btn-tutorial-get-port pull-right"></a>`);
         }
 
         else if (text == 'Stop') {
-          button = $('<a onclick="stopExecution(this)" id="BLABLA" class="btn ' + style + ' btn-xs btn-tutorial-stop ' + 'pull-right"></a>');
+          button = $(`<a onclick="stopExecution(this, '${serverIP}')" class="btn ${style} btn-xs btn-tutorial-stop pull-right"></a>`);
         }
+      }
+      else {
+        button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run ' + 'pull-right"></a>');
       }
 
       button.append($('<i class="fa ' + icon + '"></i>'));
@@ -1089,10 +994,10 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       button.append(' ' + text);
       var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       var title = text;
-      if (!check && !isExerciseJS)
+      if (!check && text == 'Run code')
         title = title + " (" + (isMac ? "Cmd" : "Ctrl") + "+Shift+Enter)";
       button.attr('title', title);
-      if (check && !isExerciseJS)
+      if (check)
         button.attr('data-check', '1');
       button.attr('data-icon', icon);
 
@@ -1108,7 +1013,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
           //languages();
           if (text == 'Get port') {
             console.log("GET PORT");
-            console.log(button.parentElement);
+            // console.log(button.parentElement);
             //getFreePort(this);
           }
           else if (text == 'Run code') {
@@ -1132,6 +1037,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       add_submit_button("fa-check-square-o", "btn-primary", "Submit Answer", true);
 
     // create run button
+    // in JS exercises only app.js file has "Run code" button
     var run_button;
     if (isAppJS || !isExerciseJS)
       run_button = add_submit_button("fa-play", "btn-success", "Run code", false);
@@ -1139,18 +1045,17 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     // If it is JS exercise, we add 3 more buttons
     if (isExerciseJS) {
       if (isAppJS)
-        add_submit_button("fa-play", "btn-success", "Stop", false);
-      add_submit_button("fa-play", "btn-success", "Send file", false);
+        add_submit_button("fa-stop", "btn-success", "Stop", false);
+      add_submit_button("fa-floppy-o", "btn-success", "Send file", false);
       if (isAppJS)
-        add_submit_button("fa-play", "btn-success", "Get port", false);
-
+        add_submit_button("fa-search", "btn-success", "Get port", false);
     }
 
     // create code div and add it to the input div
     var code_div = $('<div class="tutorial-exercise-code-editor"></div>');
     // If it is JS exercise
-    if (exercise.attr("data-label").startsWith("JS-"))
-      code_div = $(`<div data-ime="${label.split("-")[2].replace("_", ".")}" class="tutorial-exercise-code-editor-js"></div>`);
+    if (isExerciseJS)
+      code_div = $(`<div class="tutorial-exercise-code-editor-js"></div>`);
 
     var code_id = create_id('code-editor');
     code_div.attr('id', code_id);
@@ -1167,10 +1072,10 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     output_div.attr('id', create_id('output'));
     output_frame.append(output_div);
 
-    console.log("ACE EDITOR: " + code_id + ", " + code);
+    // console.log("ACE EDITOR: " + code_id + ", " + code);
     // activate the ace editor
     var editor = thiz.$attachAceEditor(code_id, code);
-    console.log(editor.session);
+    // console.log(editor.session);
 
     // get setup_code (if any)
     var setup_code = null;
@@ -1181,8 +1086,8 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       setup_code = thiz.$exerciseSupportCode(label + "-setup");
 
     // use code completion
-    var completion = true; //exercise.attr('data-completion') === "1";
-    var diagnostics = true;//exercise.attr('data-diagnostics') === "1";
+    var completion = exercise.attr('data-completion') === "1";
+    var diagnostics = exercise.attr('data-diagnostics') === "1";
 
     // support startover
     var startover_code = exercise.attr('data-startover') === "1" ? code : null;
@@ -1198,8 +1103,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     };
 
     // bind execution keys
-    // Le če gre za R nalogo oziroma je JS naloga app.js
-    // if (!isExerciseJS) {
     function bindExecutionKey(name, key) {
       var macKey = key.replace("Ctrl+", "Command+");
       editor.commands.addCommand({
@@ -1212,7 +1115,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     }
     bindExecutionKey("execute1", "Ctrl+Enter");
     bindExecutionKey("execute2", "Ctrl+Shift+Enter");
-    // }
+
 
     // re-focus the editor on run button click
     // Only for app.js and non-JS exercises
@@ -1268,6 +1171,10 @@ var b64Utf8 = function (niz) {
 var server = "192.168.1.74";
 
 var languages = function () {
+  var fileDiv = $(button.parentElement.parentElement.parentElement);
+  var serverIP = fileDiv.attr("data-serverIP");
+  console.log(serverIP);
+
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function () {
     console.log("ODGOVOR " + this.readyState);
@@ -1282,7 +1189,7 @@ var languages = function () {
       return "";
     }
   };
-  xhttp.open("GET", "http://" + server + "/jobe/index.php/restapi/languages", true);
+  xhttp.open("GET", "http://" + serverIP + "/jobe/index.php/restapi/languages", true);
   xhttp.send();
 
   // console.log("POŽENI " + document.getElementsByClassName("btn-tutorial-run-js").length);
@@ -1300,6 +1207,10 @@ var sendFIle = function (code, button, fileName) {
     return;
   }
 
+  var fileDiv = $(button.parentElement.parentElement.parentElement);
+  var serverIP = fileDiv.attr("data-serverIP");
+  console.log(serverIP);
+
   console.log(credentials);
   var body = JSON.parse(credentials)
   if (body != null)
@@ -1312,12 +1223,12 @@ var sendFIle = function (code, button, fileName) {
 
   // Make request
   var xhr = new XMLHttpRequest();
-  xhr.open("PUT", 'http://' + server + '/jobe/index.php/restapi/file/' + fileName, true);
+  xhr.open("PUT", 'http://' + serverIP + '/jobe/index.php/restapi/file/' + fileName, true);
 
   //Send the proper header information along with the request
   xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
-  xhr.onreadystatechange = function () { // Call a function when the state changes.
+  xhr.onreadystatechange = function () {
     console.log("PUT FILE " + this.responseText + ", " + this.status);
     if (this.readyState === XMLHttpRequest.DONE) {
       buttonExecutionEnd(button, runIcon, spinner);
@@ -1327,7 +1238,8 @@ var sendFIle = function (code, button, fileName) {
         console.log("PUT FILE DONE" + this.responseText + ", " + this.status);
       }
       else
-        alert("JOBE sandbox is not available at the moment! Try again later!");
+        bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
+      // alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
   // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
@@ -1346,7 +1258,7 @@ var sendFIle = function (code, button, fileName) {
   xhr.send(JSON.stringify(body));
 }
 
-var runJSCode = function (button) {
+var runJSCode = function (button, serverIP) {
   // We get reservation data from local storage and we pass them with request
   var apiKey = window.localStorage.getItem("apiKey");
   var credString = window.localStorage.getItem("credentials");
@@ -1357,13 +1269,17 @@ var runJSCode = function (button) {
     return;
   }
 
+  // var fileDiv = $(button.parentElement.parentElement.parentElement);
+  // var serverIP = fileDiv.attr("data-serverIP");
+  console.log(serverIP);
+
   // Add spinner to button
   var spinner = 'fa-spinner fa-spin fa-fw';
   var runIcon = button.children[0];
   buttonExecutionStart(button, runIcon, spinner);
 
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", 'http://' + server + '/jobe/index.php/restapi/runs', true);
+  xhr.open("POST", 'http://' + serverIP + '/jobe/index.php/restapi/runs', true);
 
   //Send the proper header information along with the request
   xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
@@ -1378,7 +1294,8 @@ var runJSCode = function (button) {
         console.log(JSON.parse(this.responseText));
       }
       else
-        alert("JOBE sandbox is not available at the moment! Try again later!");
+        bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
+      // alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
   // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
@@ -1420,7 +1337,7 @@ function buttonExecutionEnd(button, runIcon, spinner) {
 }
 
 // Stop execution
-function stopExecution(button) {
+function stopExecution(button, serverIP) {
   // We get reservation data from local storage and we pass them with request
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
@@ -1429,6 +1346,10 @@ function stopExecution(button) {
     alert("Before you can send file, you need to reserve port.");
     return;
   }
+
+  // var fileDiv = $(button.parentElement.parentElement.parentElement);
+  // var serverIP = fileDiv.attr("data-serverIP");
+  console.log(serverIP);
 
   // Add spinner and disable button
   var spinner = 'fa-spinner fa-spin fa-fw';
@@ -1452,14 +1373,15 @@ function stopExecution(button) {
         alert(xhttp.responseText);
       }
       else {
-        alert("JOBE sandbox is not available at the moment! Try again later!");
+        bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
+        // alert("JOBE sandbox is not available at the moment! Try again later!");
       }
 
     }
   }
 
 
-  xhttp.open("POST", "http://" + server + "/jobe/index.php/restapi/stop", true);
+  xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/stop", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
   // If there is no apiKEy in local storage, then apiKey == null
   // If it is empty - apiKey == ""
@@ -1469,8 +1391,12 @@ function stopExecution(button) {
   xhttp.send(credentials);
 }
 
-var getFreePort = function (button) {
-  bootbox.alert("You must complete the " + " in this section before continuing.");
+var getFreePort = function (button, serverIP) {
+  // console.log("getFreePort");
+  // console.log(button.parentElement.parentElement.parentElement);
+  // var fileDiv = $(button.parentElement.parentElement.parentElement);
+  // var serverIP = fileDiv.attr("data-serverIP");
+  console.log(serverIP);
 
   // Add spinner and disable button
   var spinner = 'fa-spinner fa-spin fa-fw';
@@ -1543,7 +1469,8 @@ var getFreePort = function (button) {
         }
       }
       else {
-        alert("JOBE sandbox is not available at the moment! Try again later!");
+        bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
+        // alert("JOBE sandbox is not available at the moment! Try again later!");
       }
 
     }
@@ -1554,7 +1481,7 @@ var getFreePort = function (button) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
 
-  xhttp.open("POST", "http://" + server + "/jobe/index.php/restapi/free_ports", true);
+  xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/free_ports", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
   // If there is no apiKEy in local storage, then apiKey == null
   // If it is empty - apiKey == ""
@@ -1617,8 +1544,120 @@ function addPortToLocalStorage(port, jobeUser, randomValue) {
 //   return isPortValid;
 // }
 
-/* Exercise solutions */
 
+// // Get ApiKey from local storage and fill all inputs with it
+function fillInputsWithApiKey() {
+  var apiKey = window.localStorage.getItem("apiKey");
+  // nastavimo vsem inputom isti api key
+  var allApiKeyInputs = document.getElementsByClassName("apiKey");
+  for (var i = 0; i < allApiKeyInputs.length; i++) {
+    allApiKeyInputs[i].value = apiKey;
+  }
+}
+
+// iz local storage prebere shranjeno vrednost in jo vpiše v inpute
+// function preberiAPortVHtml() {
+//   var credentials = window.localStorage.getItem("credentials");
+//   if (credentials != null) {
+//     var port = credentials.port;
+
+//     // nastavimo vsem 
+//     var allApiKeyInputs = document.getElementsByClassName("apiKey");
+//     for (var i = 0; i < allApiKeyInputs.length; i++) {
+//       allApiKeyInputs[i].value = apiKey;
+//     }
+//   }
+// }
+
+// save API KEY to all input fields for API KEY and save it to LOCAL STORAGE
+// Called when "Save" button next to api key input field is pressed 
+function saveApiKey(button) {
+  // Get api key from input
+  var apiKey = button.parentElement.getElementsByClassName("apiKey")[0].value;
+
+  // local storage
+  window.localStorage.setItem("apiKey", apiKey);
+
+  // Get ApiKey from local storage and fill all inputs with it
+  fillInputsWithApiKey();
+}
+
+// Delete ApiKey from all input fields
+function removeApiKey() {
+  // get all input fields with apiKey
+  var allApiKeyInputs = document.getElementsByClassName("apiKey");
+  for (var i = 0; i < allApiKeyInputs.length; i++) {
+    allApiKeyInputs[i].value = "";
+  }
+  // local storage
+  window.localStorage.removeItem("apiKey");
+}
+
+// create HTML element for API KEY
+function addApiKeyHtml() {
+  return `<span>
+            <label for="apiKey">API KEY:</label>
+            <input type="text" name="apiKey" class="apiKey" width: 260px;>
+            <button type="button" onclick="saveApiKey(this)">Save</button>
+            <button type="button" onclick="removeApiKey()">Remove</button>
+          <span>`;
+}
+
+// add new tab for file with name - caption and exercise with name - exerciseName
+function addTab(exerciseName, caption, label) {
+  var currentTabs = document.getElementById(`${exerciseName}-tabs`);
+  var tab = $(`<button class="tablinks" onclick="openFileTab(this, '${label}', '${exerciseName}')">${caption}</button>`);
+  $(currentTabs).append(tab);
+}
+// Add input field for API KEY and row with tabs for every exercise
+function addApiKeyAndFirstTab(exerciseName, label) {
+  var apiKey = addApiKeyHtml();
+  var tabs = $(`${apiKey}<div id="${exerciseName}-tabs" class="tab">                
+                            <button data-tab="${label}-tab" class="tablinks" onclick="openFileTab(this, '${label}', '${exerciseName}')">app.js</button>
+                          </div>`);
+  // get first file of exercise with `exercise.id` and add HTML before it
+  var firstFileOfExercise = $($(`[data-label="${label}"]`)[0]);
+  firstFileOfExercise.before(tabs);
+}
+
+// Simulates click on first tab for every exercise
+function openFirstTab() {
+  // get all DIV with tabs
+  var allDivTabs = document.getElementsByClassName("tab");
+
+  // go through all DIV with tabs and simulate click on first tab
+  for (var i = 0; i < allDivTabs.length; i++) {
+    var singleDivTab = allDivTabs[i];
+    var firstButtonTab = $(singleDivTab.getElementsByClassName("tablinks")[0]);
+    firstButtonTab.click();
+  }
+}
+
+// Open JS tab depending on exerciseName and caption
+function openFileTab(button, label, exerciseName) {
+  var i, tabcontent, tablinks;
+
+  // Hide all files
+  tabcontent = $('[data-id="' + exerciseName + '"]');
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // DIV with tab buttons
+  var tabButtons = document.getElementById(exerciseName + '-tabs');
+  // buttons for tabs
+  tablinks = tabButtons.getElementsByClassName("tablinks");
+  // remove class active from buttons
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // show the chosen tab and mark the button/tab as active
+  $('[data-label="' + label + '"]').css("display", "block");
+  button.className += " active";
+}
+
+/* Exercise solutions */
 Tutorial.prototype.$initializeExerciseSolutions = function () {
 
   // alias this
@@ -1894,7 +1933,7 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
     },
 
     getValue: function (el) {
-      console.log("getValue - INPUT 2");
+      console.log("getValue - INPUT 2 " + exerciseLabel(el));
       console.log(el);
       // return null if we haven't been clicked and this isn't a restore
       if (!this.clicked && !this.restore)
@@ -1930,7 +1969,8 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
 */
       var button = thiz.$exerciseContainer(el).find('.btn-tutorial-send-file')[0];
       // exercise.find('.btn-tutorial-send-file');
-      sendFIle(editor.getSession().getValue(), button, $(el).attr("data-ime"));
+      var fileName = $(thiz.$exerciseContainer(el)).attr("data-caption");
+      sendFIle(editor.getSession().getValue(), button, fileName);
       //runJSCode();
       console.log("BLA BLA vsebina " + value.code);
       // get the preserved chunk options (if any)
@@ -1970,7 +2010,7 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
 
     subscribe: function (el, callback) {
       console.log("getValue - SUBSCRIBE 2");
-      console.log(el);
+      // console.log(el);
       var binding = this;
       this.runButtons(el).on('click.exerciseInputBinding2', function (ev) {
         binding.restore = false;
@@ -2014,7 +2054,7 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
     },
 
     getValue: function (el) {
-      console.log("getValue - INPUT 1");
+      console.log("getValue - INPUT 1 " + exerciseLabel(el));
       // return null if we haven't been clicked and this isn't a restore
       if (!this.clicked && !this.restore)
         return null;

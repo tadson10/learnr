@@ -130,12 +130,19 @@ install_knitr_hooks <- function() {
         diagnostics <- as.numeric(options$exercise.diagnostics %||% 1 > 0)
         startover <- as.numeric(options$exercise.startover %||% 1 > 0)
         caption <- ifelse(is.null(options$exercise.cap), "Code", options$exercise.cap)
+        type <- ifelse(is.null(options$exercise.type), "r", options$exercise.type)
+        serverIP <- options$exercise.serverIP
+        id <- options$exercise.id
+        
         paste0('<div class="tutorial-', class,
                '" data-label="', options$label,
                '" data-caption="', caption,
                '" data-completion="', completion,
                '" data-diagnostics="', diagnostics,
                '" data-startover="', startover,
+               '" data-serverIP="', serverIP,
+               '" data-type="', type,
+               '" data-id="', id,
                '" data-lines="', lines, '">')
       }
       # after exercise
