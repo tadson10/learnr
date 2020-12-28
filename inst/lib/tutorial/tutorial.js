@@ -1197,7 +1197,7 @@ var languages = function () {
   //console.log("POŽENI " + exercise.attr('data-caption'));
 }
 
-var sendFIle = function (code, button, fileName) {
+var sendFIle = function (code, button, fileName, serverIP) {
   // We get reservation data from local storage and we pass them with request
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
@@ -1207,11 +1207,6 @@ var sendFIle = function (code, button, fileName) {
     return;
   }
 
-  var fileDiv = $(button.parentElement.parentElement.parentElement);
-  var serverIP = fileDiv.attr("data-serverIP");
-  console.log(serverIP);
-
-  console.log(credentials);
   var body = JSON.parse(credentials)
   if (body != null)
     body.file_contents = btoa(unescape(encodeURIComponent(code)));
@@ -1923,8 +1918,6 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
   $.extend(exerciseInputBinding2, {
 
     find: function (scope) {
-      //console.log("SCOPE: ");
-      //console.dir(scope);
       console.log(scope);
       console.log($(scope).find('.tutorial-exercise-code-editor-js'));
 
@@ -1934,7 +1927,8 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
 
     getValue: function (el) {
       console.log("getValue - INPUT 2 " + exerciseLabel(el));
-      console.log(el);
+      var serverIP = $(thiz.$exerciseContainer(el)[0]).attr("data-serverIP");
+
       // return null if we haven't been clicked and this isn't a restore
       if (!this.clicked && !this.restore)
         return null;
@@ -1948,31 +1942,20 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
       // get the code from the editor
       var editor = ace.edit($(el).attr('id'));
       // value.code = editor.getSession().getValue();
-      console.log("EDITOR");
-      console.log(editor);
 
-      // console.log("INPUT1: " + btoa(editor.getSession().getValue()));
-      // console.log("INPUT2: " + b64Utf8(btoa(editor.getSession().getValue())));
-      // ct$eval(" var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-      //                         var xhttp = new XMLHttpRequest();
-      //                         xhttp.open('GET', 'http://192.168.1.106/jobe/index.php/restapi/languages', false);
-      //                         xhttp.send();
-      //                         var languages = JSON.parse(xhttp.responseText);
-      //                         // console.log('POŽENI ' + languages[0][1]);
-      //                         console.log('POŽENI ' + xhttp.responseText);")
-
-      /*value.code =
-        `ct <- V8::new_context()
-        ct$eval("var a = 1")
-        ct$get("a")
-        ct$eval("` + editor.getSession().getValue() + `")`;
-*/
+      // ct$eval("` + editor.getSession().getValue() + `")`;
+      // var myFunction = new Function("a", "b", "return a * b");  var x = myFunction(4, 3);
       var button = thiz.$exerciseContainer(el).find('.btn-tutorial-send-file')[0];
-      // exercise.find('.btn-tutorial-send-file');
       var fileName = $(thiz.$exerciseContainer(el)).attr("data-caption");
-      sendFIle(editor.getSession().getValue(), button, fileName);
-      //runJSCode();
-      console.log("BLA BLA vsebina " + value.code);
+      // We defined server IP attribute, so code will be executed on JOBE server
+      if (serverIP != "") {
+        sendFIle(editor.getSession().getValue(), button, fileName, serverIP);
+        value.code = null;
+      }
+      else
+        value.code = `ct <- V8::new_context()
+                      ct$eval('${editor.getSession().getValue()}')`;
+
       // get the preserved chunk options (if any)
       var options_script = thiz.$exerciseContainer(el).find('script[data-opts-chunk="1"]');
       if (options_script.length == 1)
