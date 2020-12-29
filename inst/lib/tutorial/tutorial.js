@@ -1630,7 +1630,7 @@ function addTab(exerciseName, caption, label) {
   $(currentTabs).append(tab);
 }
 // Add input field for API KEY and row with tabs for every exercise
-function addApiKeyAndFirstTab(exerciseName, label, isServerIP) {
+function addApiKeyAndFirstTab(exerciseName, label) {
 
   var apiKey = addApiKeyHtml();
   var tabs = $(`${apiKey}<div id="${exerciseName}-tabs" class="tab">                
