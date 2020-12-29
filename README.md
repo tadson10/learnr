@@ -20,6 +20,16 @@
 
 
 
+**CODE CHUNKS:**
+* Naloge tipa `js` bodo morale imeti definiran `id` in `caption`. :heavy_check_mark:
+* Če naloga tipa `js` ne bo imela definiranega `serverIP`, potem je lahko `caption` samo "app.js". :heavy_check_mark:
+* Option `type` sprejme samo "js". :heavy_check_mark:
+* Naloge, ki ne bodo tipa `js`, ne bodo smele imeti definiranega nobenega izmed novih OPTIONS (id, serverIP). :heavy_check_mark:
+* Potrebno preveriti, da se caption ne podvaja pri type = "js" za isti "id". 
+
+
+
+
 
 **JOBE:**
 CREATE DATABASE jobe;
