@@ -56,9 +56,27 @@ setup_exercise_handler <- function(exercise_rx, session) {
     # create a new environment parented by the global environment
     # transfer all of the objects in the server_envir (i.e. setup and data chunks)
     envir <- duplicate_env(server_envir, parent = globalenv())
-    #print(paste("NALOGA: ", exercise))
-    #print(envir)
     # create exercise evaluator
+    
+    # Check if it is JS exercise
+    if(exercise$options$exercise.type == 'js') {
+      code_copy <- exercise$code
+
+      # Check if serverIP is defined 
+      # If it IS, code is not executed here but at JOBE server, so we remove the code
+      if(exercise$options$exercise.serverIP == "" && exercise$options$exercise.caption == "app.js") {
+        exercise$code <- paste0('ct <- V8::new_context()\n',
+                              'ct$eval(\'', gsub("'", "\\\\'", exercise$code) , '\')')
+      }
+      else {
+        # we don't want the code to be executed here, we just want to save it
+        exercise$code <- ""
+      }
+    }
+    else {
+      code_copy <- exercise$code
+    }
+
     evaluator <- evaluator_factory(evaluate_exercise(exercise, envir), timelimit)
 
     # start it
@@ -76,7 +94,7 @@ setup_exercise_handler <- function(exercise_rx, session) {
         exercise_submission_event(
           session = session,
           label = exercise$label,
-          code = exercise$code,
+          code = code_copy,
           output = result$html_output,
           error_message = result$error_message,
           checked = !is.null(exercise$code_check) || !is.null(exercise$check),
@@ -86,7 +104,7 @@ setup_exercise_handler <- function(exercise_rx, session) {
         # assign reactive result value
         rv$triggered <- isolate({ rv$triggered + 1})
         rv$result <- result$html_output
-print(rv$result)
+
         # destroy the observer
         o$destroy()
 
@@ -269,7 +287,6 @@ evaluate_exercise <- function(exercise, envir) {
       code, envir, ...,
       output_handler = output_handler
     )
-    #print(evaluate_result)
     evaluate_result
   }
   output_format <- rmarkdown::output_format(

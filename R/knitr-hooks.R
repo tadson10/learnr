@@ -161,6 +161,9 @@ install_knitr_hooks <- function() {
         # verify the chunk has a label if required
         verify_tutorial_chunk_label()
 
+        # verify the chunk meets requirements for JS exercise 
+        verify_tutorial_chunk_js()
+
         # inject ace and clipboardjs dependencies
         knitr::knit_meta_add(list(
           list(ace_html_dependency()),
@@ -195,7 +198,11 @@ install_knitr_hooks <- function() {
         preserved_options$exercise.timelimit <- options$exercise.timelimit
         preserved_options$exercise.setup <- options$exercise.setup
         preserved_options$exercise.checker <- deparse(options$exercise.checker)
-
+        preserved_options$exercise.type <- ifelse(is.null(options$exercise.type), "r", options$exercise.type)
+        preserved_options$exercise.serverIP <- ifelse(is.null(options$exercise.serverIP), "", options$exercise.serverIP)
+        preserved_options$exercise.caption <- ifelse(is.null(options$exercise.cap), "Code", options$exercise.cap)
+        
+        print(jsonlite::toJSON(preserved_options, auto_unbox = TRUE))
         # script tag with knit options for this chunk
         extra_html <- c('<script type="application/json" data-opts-chunk="1">',
                         jsonlite::toJSON(preserved_options, auto_unbox = TRUE),
@@ -255,5 +262,44 @@ verify_tutorial_chunk_label <- function() {
       "\n\nTry using: \"", gsub(not_valid_char_regex, "_", label) ,"\"",
       call. = FALSE
     )
+  }
+}
+
+
+check_empty_value <- function(variable) {
+  variable <- ifelse(is.null(variable), "", variable) 
+  ifelse(variable == "", TRUE, FALSE)
+}
+
+verify_tutorial_chunk_js <- function() {
+  if (!isTRUE(getOption("knitr.in.progress"))) return()
+
+  caption <- knitr::opts_current$get('exercise.cap') #ifelse(is.null(knitr::opts_current$get('exercise.cap')), "", knitr::opts_current$get('exercise.cap')) 
+  type <- knitr::opts_current$get('exercise.type') #ifelse(is.null(knitr::opts_current$get('exercise.type')), "", knitr::opts_current$get('exercise.type')) 
+  exerciseId <- knitr::opts_current$get('exercise.id') #ifelse(is.null(knitr::opts_current$get('exercise.id')), "", knitr::opts_current$get('exercise.id')) 
+  serverIP <- knitr::opts_current$get('exercise.serverIP') #ifelse(is.null(knitr::opts_current$get('exercise.serverIP')), "", knitr::opts_current$get('exercise.serverIP')) 
+  label <- knitr::opts_current$get('label')
+
+  if (!check_empty_value(type) && type != "js") {
+    stop("exercise.type can only be 'js' or empty. Problematic chunk with label: \"", label, "\".",
+         call. = FALSE)
+  }
+  # Type 'js', but no caption or id
+  if (!check_empty_value(type) && type == "js" && (check_empty_value(caption)  || check_empty_value(exerciseId))) {
+    stop("Code chunks with type 'js' must have a 'caption' and 'id'. Problematic chunk with label: \"", label, "\".",
+         call. = FALSE)
+  }
+
+  # No type defined
+  # Defined: caption or id or serverIP
+  if (check_empty_value(type) && (!check_empty_value(caption) || !check_empty_value(exerciseId) || !check_empty_value(serverIP))) {
+    stop("Code chunks with empty exercise.type can't have options caption, id and serverIP defined. Problematic chunk with label: \"", label, "\".",
+         call. = FALSE)
+  }
+
+  # Type 'js' and no serverIP, but caption != "app.js"
+  if (!check_empty_value(type) && type == "js" && check_empty_value(serverIP) && caption != "app.js") {
+    stop("Code chunks with type 'js' and no JOBE serverIP defined, can only have caption = 'app.js'. Problematic chunk with label: \"", label, "\".",
+         call. = FALSE)
   }
 }
