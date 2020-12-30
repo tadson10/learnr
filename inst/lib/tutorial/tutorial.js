@@ -718,6 +718,9 @@ Tutorial.prototype.$initializeExercises = function () {
   addPortHtml();
   // Simulate click on first tab for every JS exercise
   openFirstTab();
+
+  // Prevernt favicon error
+  $(document.getElementsByTagName('head')[0]).append($(`<link rel="shortcut icon" href="#">`));
 };
 
 Tutorial.prototype.$exerciseForLabel = function (label) {
@@ -937,7 +940,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     if (isAppJS && serverIP != "")
       addApiKeyAndFirstTab(exerciseName, label);
     else if (!isAppJS && isExerciseJS && serverIP != "")
-      addTab(exerciseName, caption, label, serverIP);
+      addFileTab(exerciseName, caption, label, serverIP);
     /********************************************* */
     console.log("LOLEK BOLEK " + isExerciseJS + ", " + isAppJS);
 
@@ -1099,10 +1102,17 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     // prepend the input div to the exercise container
     exercise.prepend(input_div);
 
+    if (isAppJS && serverIP != "") {
+      addOutputTabs(exerciseName, label);
+      var webpage_div = $(`<div class="webpageDiv">
+                          <iframe class="webpage" src="http://192.168.1.84:3000" width="100%" height="600" loading="lazy"></iframe></div>`);
+      output_frame.after(webpage_div);
+    }
     // create an output div and append it to the output_frame
     var output_div = $('<div class="tutorial-exercise-output"></div>');
     output_div.attr('id', create_id('output'));
     output_frame.append(output_div);
+
 
     // console.log("ACE EDITOR: " + code_id + ", " + code);
     // activate the ace editor
@@ -1636,8 +1646,54 @@ function addApiKeyHtml() {
           <span>`;
 }
 
+// Refresh ALL iframes
+function refreshWebpageDiv() {
+  var iframes = document.getElementsByClassName('webpage');
+  for (var i = 0; i < iframes.length; i++)
+    iframes[i].src += '';
+}
+// Toolbar for output tabs - only called for app.js file
+function addOutputTabs(exerciseName, label) {
+  var tabs = $(`<div id="${exerciseName}-output-tabs" class="tab">                
+                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', false)">Output</button>
+                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', true)">Webpage</button>
+                          </div>`);
+  // get div with input and add output toolbar after it
+  var firstFileOfExercise = $(document.getElementById(`tutorial-exercise-${label}-input`));
+  firstFileOfExercise.after(tabs);
+}
+
+// Open JS tab depending on exerciseName and caption
+function openOutTab(button, label, exerciseName, refresh) {
+  // refresh only when Webpage tab is clicked
+  if (refresh)
+    refreshWebpageDiv();
+  var className, exercise, tabcontent, tablinks;
+  // if we clicked Output, we want to hide div with class webpage
+  className = button.innerHTML == "Output" ? "webpageDiv" : "tutorial-exercise-output-frame";
+
+  // Hide other tab
+  exercise = $('[data-label="' + label + '"]')[0];
+  tabcontent = $(exercise.getElementsByClassName(className));
+  tabcontent[0].style.display = "none";
+
+  // DIV with tab buttons
+  var outTabButtons = document.getElementById(exerciseName + '-output-tabs');
+  // buttons for tabs
+  tablinks = outTabButtons.getElementsByClassName("tablinks");
+  // remove class active from buttons
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // show the chosen tab and mark the button/tab as active
+  className = button.innerHTML == "Output" ? "tutorial-exercise-output-frame" : "webpageDiv";
+  $(exercise.getElementsByClassName(className)).css("display", "block");
+  button.className += " active";
+}
+
 // add new tab for file with name - caption and exercise with name - exerciseName
-function addTab(exerciseName, caption, label) {
+function addFileTab(exerciseName, caption, label) {
   var currentTabs = document.getElementById(`${exerciseName}-tabs`);
   var tab = $(`<button class="tablinks" onclick="openFileTab(this, '${label}', '${exerciseName}')">${caption}</button>`);
   $(currentTabs).append(tab);
