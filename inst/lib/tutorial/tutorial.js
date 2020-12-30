@@ -963,27 +963,27 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
     console.log(isExerciseJS);
     // function to add a submit button
-    function add_submit_button(icon, style, text, check) {
-
+    function add_submit_button(icon, style, text, check, isRunButton, onClick) {
+      var runClass = "";
       // class that tells inputBinding to bind this button
-      var runClass = "btn-tutorial-run";
-      var onClick = "";
+      if (isRunButton)
+        runClass = "btn-tutorial-run";
 
-      if (text == 'Run code' && isExerciseJS && serverIP != "") {
-        runClass = "";
-        onClick = `onclick="runJSCode(this, '${serverIP}')"`;
-      }
-      else if (text == 'Send file') {
-        onClick = `onclick="sendFile(this, '${caption}', '${serverIP}', '${label}')"`;
-      }
-      else if (text == 'Get port') {
-        runClass = "";
-        onClick = `onclick="getFreePort(this, '${serverIP}')"`;
-      }
-      else if (text == 'Stop') {
-        runClass = "";
-        onClick = `onclick="stopExecution(this, '${serverIP}')"`;
-      }
+      // if (text == 'Run code' && isExerciseJS && serverIP != "") {
+      //   runClass = "";
+      //   onClick = `onclick="runJSCode(this, '${serverIP}')"`;
+      // }
+      // else if (text == 'Send file') {
+      //   onClick = `onclick="sendFile(this, '${caption}', '${serverIP}', '${label}')"`;
+      // }
+      // else if (text == 'Get port') {
+      //   runClass = "";
+      //   onClick = `onclick="getFreePort(this, '${serverIP}')"`;
+      // }
+      // else if (text == 'Stop') {
+      //   runClass = "";
+      //   onClick = `onclick="stopExecution(this, '${serverIP}')"`;
+      // }
 
       var button = $(`<a ${onClick} class="btn ${style} btn-xs ${runClass} pull-right"></a>`);
 
@@ -1053,21 +1053,34 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
     // create submit answer button if checks are enabled
     if (thiz.$exerciseCheckCode(label) !== null)
-      add_submit_button("fa-check-square-o", "btn-primary", "Submit Answer", true);
+      add_submit_button("fa-check-square-o", "btn-primary", "Submit Answer", true, true, "");
 
     // create run button
     // in JS exercises only app.js file has "Run code" button
     var run_button;
-    if (isAppJS || !isExerciseJS)
-      run_button = add_submit_button("fa-play", "btn-success", "Run code", false);
+    var onClick = "";
+    var isRunButton = true;
+    if (isAppJS && serverIP != "") {
+      isRunButton = false;
+      onClick = `onclick="runJSCode(this, '${serverIP}')"`;
+    }
+    run_button = add_submit_button("fa-play", "btn-success", "Run code", false, isRunButton, onClick);
 
     // If it is JS exercise, we add 3 more buttons
     if (isExerciseJS && serverIP != "") {
-      if (isAppJS)
-        add_submit_button("fa-stop", "btn-success", "Stop", false);
-      add_submit_button("fa-floppy-o", "btn-success", "Send file", false);
-      if (isAppJS)
-        add_submit_button("fa-search", "btn-success", "Get port", false);
+      var onClick;
+      if (isAppJS) {
+        onClick = `onclick="stopExecution(this, '${serverIP}')"`;
+        add_submit_button("fa-stop", "btn-success", "Stop", false, false, onClick);
+      }
+
+      onClick = `onclick="sendFile(this, '${caption}', '${serverIP}', '${label}')"`;
+      add_submit_button("fa-floppy-o", "btn-success", "Send file", false, true, onClick);
+
+      if (isAppJS) {
+        onClick = `onclick="getFreePort(this, '${serverIP}')"`;
+        add_submit_button("fa-search", "btn-success", "Get port", false, false, onClick);
+      }
     }
 
     // create code div and add it to the input div
