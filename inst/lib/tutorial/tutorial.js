@@ -1103,9 +1103,9 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     exercise.prepend(input_div);
 
     if (isAppJS && serverIP != "") {
-      addOutputTabs(exerciseName, label);
+      addOutputTabs(exerciseName, label, serverIP);
       var webpage_div = $(`<div class="webpageDiv">
-                          <iframe class="webpage" src="http://192.168.1.84:3000" width="100%" height="600" loading="lazy"></iframe></div>`);
+                          <iframe class="webpage" width="100%" height="600" loading="lazy"></iframe></div>`);
       output_frame.after(webpage_div);
     }
     // create an output div and append it to the output_frame
@@ -1647,16 +1647,16 @@ function addApiKeyHtml() {
 }
 
 // Refresh ALL iframes
-function refreshWebpageDiv() {
+function refreshWebpageDiv(serverIP, port) {
   var iframes = document.getElementsByClassName('webpage');
   for (var i = 0; i < iframes.length; i++)
-    iframes[i].src += '';
+    iframes[i].src = `http://${serverIP}:${port}`;
 }
 // Toolbar for output tabs - only called for app.js file
-function addOutputTabs(exerciseName, label) {
+function addOutputTabs(exerciseName, label, serverIP) {
   var tabs = $(`<div id="${exerciseName}-output-tabs" class="tab">                
-                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', false)">Output</button>
-                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', true)">Webpage</button>
+                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Output</button>
+                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', '${serverIP}')">Webpage</button>
                           </div>`);
   // get div with input and add output toolbar after it
   var firstFileOfExercise = $(document.getElementById(`tutorial-exercise-${label}-input`));
@@ -1664,10 +1664,12 @@ function addOutputTabs(exerciseName, label) {
 }
 
 // Open JS tab depending on exerciseName and caption
-function openOutTab(button, label, exerciseName, refresh) {
-  // refresh only when Webpage tab is clicked
-  if (refresh)
-    refreshWebpageDiv();
+function openOutTab(button, label, exerciseName, serverIP) {
+  var credentials = window.localStorage.getItem("credentials");
+  var apiKey = window.localStorage.getItem("apiKey");
+  // refresh only when Webpage tab is clicked and we have credentials and api key in local storage
+  if (serverIP && apiKey && credentials)
+    refreshWebpageDiv(serverIP, JSON.parse(credentials).port);
   var className, exercise, tabcontent, tablinks;
   // if we clicked Output, we want to hide div with class webpage
   className = button.innerHTML == "Output" ? "webpageDiv" : "tutorial-exercise-output-frame";
