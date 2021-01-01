@@ -17,7 +17,8 @@
     * exercise.caption: predstavlja IME DATOTEKE
 * Datoteke so razdeljene v zavihke, omogoča poljubno število datotek, vse datoteke, ki pripadajo ISTI NALOGI, morajo imeti isti `exercise.id`
 * Omogoča dodajanje API KEY-a v input field. Ko se izpolni input, se API KEY shrani v local storage in napolni vse druge inpute. Ko se stran naloži, se preveri, ali v local storage obstaja API KEY in se ga vstavi v inpute.
-
+* Uporabnik lahko server požene samo na njegovem portu, kar se doseže z uporabo .env (PORT se poda pri zagonu kode na JOBE) - preverja se, ali koda vsebuje '.listen(process.env.PORT', drugače javi napako!
+* Ogled strani direktno pri uporabniku v oknu pod datotekami
 
 
 **CODE CHUNKS:**
