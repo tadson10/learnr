@@ -800,33 +800,35 @@ Tutorial.prototype.$showExerciseProgress = function (label, button, show) {
 
   // references to various UI elements
   var exercise = this.$exerciseForLabel(label);
-  var outputFrame = exercise.children('.tutorial-exercise-output-frame');
-  var runButtons = exercise.find('.btn-tutorial-run');
+  if (exercise.attr("data-serverIP") == "") {
+    var outputFrame = exercise.children('.tutorial-exercise-output-frame');
+    var runButtons = exercise.find('.btn-tutorial-run');
 
-  // if the button is "run" then use the run button
-  if (button === "run")
-    button = exercise.find('.btn-tutorial-run').last();
+    // if the button is "run" then use the run button
+    if (button === "run")
+      button = exercise.find('.btn-tutorial-run').last();
 
-  // show/hide progress UI
-  var spinner = 'fa-spinner fa-spin fa-fw';
-  if (show) {
-    outputFrame.addClass('recalculating');
-    runButtons.addClass('disabled');
-    if (button !== null) {
-      var runIcon = button.children('i');
-      runIcon.removeClass(button.attr('data-icon'));
-      runIcon.addClass(spinner);
+    // show/hide progress UI
+    var spinner = 'fa-spinner fa-spin fa-fw';
+    if (show) {
+      outputFrame.addClass('recalculating');
+      runButtons.addClass('disabled');
+      if (button !== null) {
+        var runIcon = button.children('i');
+        runIcon.removeClass(button.attr('data-icon'));
+        runIcon.addClass(spinner);
+      }
     }
-  }
-  else {
-    outputFrame.removeClass('recalculating');
-    runButtons.removeClass('disabled');
-    runButtons.each(function () {
-      var button = $(this);
-      var runIcon = button.children('i');
-      runIcon.addClass(button.attr('data-icon'));
-      runIcon.removeClass(spinner);
-    });
+    else {
+      outputFrame.removeClass('recalculating');
+      runButtons.removeClass('disabled');
+      runButtons.each(function () {
+        var button = $(this);
+        var runIcon = button.children('i');
+        runIcon.addClass(button.attr('data-icon'));
+        runIcon.removeClass(spinner);
+      });
+    }
   }
 };
 
