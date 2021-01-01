@@ -1240,8 +1240,6 @@ var languages = function () {
 }
 
 var sendFile = function (button, fileName, serverIP, label) {
-
-
   // We get reservation data from local storage and we pass them with request
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
@@ -1253,6 +1251,25 @@ var sendFile = function (button, fileName, serverIP, label) {
 
   var editor = ace.edit(`tutorial-exercise-${label}-code-editor`);
   var code = editor.getSession().getValue();
+
+  // Regex to remove comments from code - we don't need to check comments for the right PORT
+  var uncomment = /((\/\*[\s\S]*?\*\/|\/\/.*))/g;
+  var codeUncomment = code.replace(uncomment, '');
+
+  // Check if user tried to start server on other ports that don't belong to him
+  // First we check if user tried to start a server
+  var regServer = /[.]listen/g;
+  var match1 = codeUncomment.match(regServer);
+  if (match1 && match1.length > 0) {
+    // we check that 'process.env.PORT' is used for port number
+    var regPort = /[.]listen\s*\(\s*process.env.PORT/g;
+    var match2 = codeUncomment.match(regPort);
+    // Check if after every '.listen', 'process.env.PORT' is used
+    if (!match2 || match2.length != match1.length) {
+      bootbox.alert("You can only use 'process.env.PORT' to start server!");
+      return;
+    }
+  }
 
   var body = JSON.parse(credentials)
   if (body != null)
