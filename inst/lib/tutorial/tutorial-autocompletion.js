@@ -2,7 +2,7 @@ function TutorialCompleter(tutorial) {
   this.$tutorial = tutorial;
   var self = this;
 
-  this.$onChange = function(data) {
+  this.$onChange = function (data) {
     clearTimeout(this.$autocompletionTimerId);
     data = data || {};
 
@@ -14,7 +14,7 @@ function TutorialCompleter(tutorial) {
     var lines = data.lines || [];
     if (lines.length !== 1)
       return;
-    
+
     // NOTE: Ace has already updated the document line at this point
     // so we can just look at the state of that line
     var pos = this.getCursorPosition();
@@ -37,20 +37,20 @@ function TutorialCompleter(tutorial) {
 
     this.$autocompletionTimerId = setTimeout(this.$liveAutocompleter, delayMs);
   };
- 
-  var MODIFIER_NONE  = 0;
-  var MODIFIER_CTRL  = 1;
-  var MODIFIER_ALT   = 2;
+
+  var MODIFIER_NONE = 0;
+  var MODIFIER_CTRL = 1;
+  var MODIFIER_ALT = 2;
   var MODIFIER_SHIFT = 4;
 
-  var KEYCODE_TAB   =  9;
+  var KEYCODE_TAB = 9;
   var KEYCODE_SPACE = 32;
 
-  var KeyCombination = function(event) {
+  var KeyCombination = function (event) {
     this.keyCode = event.keyCode || event.which;
     this.modifier = MODIFIER_NONE;
-    this.modifier |= event.ctrlKey  ? MODIFIER_CTRL  : 0;
-    this.modifier |= event.altKey   ? MODIFIER_ALT   : 0;
+    this.modifier |= event.ctrlKey ? MODIFIER_CTRL : 0;
+    this.modifier |= event.altKey ? MODIFIER_ALT : 0;
     this.modifier |= event.shiftKey ? MODIFIER_SHIFT : 0;
   };
 
@@ -62,8 +62,8 @@ function TutorialCompleter(tutorial) {
     // handling completions for all Ace instances)
     var handlers = {};
 
-    handlers["change"]  = self.$onChange.bind(editor);
-    handlers["destroy"] = function(event) {
+    handlers["change"] = self.$onChange.bind(editor);
+    handlers["destroy"] = function (event) {
       for (var key in handlers)
         this.off(key, handlers[key]);
     }.bind(editor);
@@ -74,16 +74,15 @@ function TutorialCompleter(tutorial) {
   }
 
   function initializeCompletionEngine(editor) {
-    
     editor.completers = editor.completers || [];
     editor.completers.push({
 
-      getCompletions: function(editor, session, position, prefix, callback) {
-        
+      getCompletions: function (editor, session, position, prefix, callback) {
+
         // send autocompletion request with document contents up to cursor
         // position (done to enable multi-line autocompletions)
         var contents = session.getTextRange({
-          start: {row: 0, column: 0},
+          start: { row: 0, column: 0 },
           end: position
         });
 
@@ -92,14 +91,14 @@ function TutorialCompleter(tutorial) {
           label: editor.tutorial.label
         };
 
-        self.$tutorial.$serverRequest("completion", payload, function(data) {
-          
+        self.$tutorial.$serverRequest("completion", payload, function (data) {
+
           data = data || [];
 
           // define a custom completer -- used for e.g. automatic
           // parenthesis insertion, and so on
           var completer = {
-            insertMatch: function(editor, data) {
+            insertMatch: function (editor, data) {
 
               // remove prefix
               var ranges = editor.selection.getAllRanges();
@@ -109,7 +108,7 @@ function TutorialCompleter(tutorial) {
                 ranges[i].start.column -= n;
                 editor.session.remove(ranges[i]);
               }
-              
+
               // insert completion term (add parentheses for functions)
               var term = data.value + (data.is_function ? "()" : "");
               editor.execCommand("insertstring", term);
@@ -120,7 +119,7 @@ function TutorialCompleter(tutorial) {
             }
           };
 
-          var completions = data.map(function(el) {
+          var completions = data.map(function (el) {
             return {
               caption: el[0] + (el[1] ? "()" : ""),
               value: el[0],
@@ -148,23 +147,26 @@ function TutorialCompleter(tutorial) {
     self.$tutorial.$serverRequest("initialize_chunk", data);
   }
 
-  var ensureInitialized = function(editor) {
-    
+  var ensureInitialized = function (editor) {
+
     // bail if completions are disabled for this editor
     if (!editor.tutorial.completion)
       return;
-    
+
     if (editor.$autocompletionInitialized)
+      return;
+
+    if (editor.session.getMode().$id != "ace/mode/r")
       return;
 
     initializeAceEventListeners(editor);
     initializeCompletionEngine(editor);
     initializeSetupChunk(editor);
-    
+
     // generate a live autocompleter for this editor if
     // not yet available
     if (typeof editor.$liveAutocompleter === "undefined") {
-      editor.$liveAutocompleter = function() {
+      editor.$liveAutocompleter = function () {
         this.execCommand("startAutocomplete");
       }.bind(editor);
     }
@@ -172,7 +174,7 @@ function TutorialCompleter(tutorial) {
     editor.$autocompletionInitialized = 1;
   };
 
-  var findActiveAceInstance = function() {
+  var findActiveAceInstance = function () {
     var el = document.activeElement;
     while (el != null) {
       if (el.env && el.env.editor)
@@ -182,17 +184,17 @@ function TutorialCompleter(tutorial) {
     return null;
   };
 
-  var autocomplete = function() {
+  var autocomplete = function () {
 
     // find active Ace instance
     var editor = findActiveAceInstance();
     if (editor == null)
       return;
-      
+
     // bail if completions are disabled for this editor
     if (!editor.tutorial.completion)
       return;
-    
+
     // ensure completion engine initialized
     ensureInitialized(editor);
 
@@ -205,7 +207,7 @@ function TutorialCompleter(tutorial) {
     editor.execCommand("startAutocomplete");
   };
 
-  document.addEventListener("keydown", function(event) {
+  document.addEventListener("keydown", function (event) {
 
     // TODO: find more appropriate place for one-time initialization
     var editor = findActiveAceInstance();
@@ -218,11 +220,11 @@ function TutorialCompleter(tutorial) {
 
     var keys = new KeyCombination(event);
     if (keys.keyCode == KEYCODE_TAB && keys.modifier == MODIFIER_NONE)
-       return autocomplete();
-    
+      return autocomplete();
+
     if (keys.keyCode == KEYCODE_SPACE && keys.modifier == MODIFIER_CTRL)
-       return autocomplete();
+      return autocomplete();
 
   }, true);
-  
+
 }

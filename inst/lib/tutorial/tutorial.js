@@ -7,8 +7,6 @@ $(document).ready(function () {
   // register autocompletion if available
   if (typeof TutorialCompleter !== "undefined")
     tutorial.$completer = new TutorialCompleter(tutorial);
-  // console.log("tutorial.$completer");
-  // console.log(tutorial);
   // register diagnostics if available
   if (typeof TutorialDiagnostics !== "undefined")
     tutorial.$diagnostics = new TutorialDiagnostics(tutorial);
@@ -838,7 +836,23 @@ Tutorial.prototype.kMinLines = 3;
 
 // edit code within an ace editor
 Tutorial.prototype.$attachAceEditor = function (target, code) {
+  var mode = "r";
   var editor = ace.edit(target);
+
+  var exercise = this.$exerciseContainer(editor.container);//$('.tutorial-exercise[data-label="' + editor.tutorial.label + '"]');
+  var type = exercise.attr("data-type");
+  if (type == "js") {
+    var fileExt = exercise.attr("data-caption").split(".")[1];
+    switch (fileExt) {
+      case "js":
+        mode = "javascript";
+        break;
+      default:
+        mode = fileExt;
+        break;
+    }
+  }
+
   editor.setHighlightActiveLine(false);
   editor.setShowPrintMargin(false);
   editor.setShowFoldWidgets(false);
@@ -846,22 +860,18 @@ Tutorial.prototype.$attachAceEditor = function (target, code) {
   editor.renderer.setDisplayIndentGuides(false);
   editor.setTheme("ace/theme/textmate");
   editor.$blockScrolling = Infinity;
-  editor.session.setMode("ace/mode/r");
+  editor.session.setMode("ace/mode/" + mode);
   editor.session.getSelection().clearSelection();
   editor.setValue(code, -1);
-  // editor.setOptions({
-  //   enableBasicAutocompletion: true,
-  //   enableSnippets: true,
-  //   enableLiveAutocompletion: true
-  // });
 
-  // editor.commands.on("afterExec", function (e) {
-  //   if (e.command.name == "insertstring" && /^[\w.]$/.test(e.args)) {
-  //     editor.execCommand("startAutocomplete")
-  //   }
-  // })
-  console.log("editor.getOptions()");
-  console.log(editor.getOptions());
+  if (type == "js") {
+    editor.setOptions({
+      enableBasicAutocompletion: true,
+      enableSnippets: true,
+      enableLiveAutocompletion: true
+    });
+  }
+
   return editor;
 };
 
@@ -1062,14 +1072,16 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
     // create run button
     // in JS exercises only app.js file has "Run code" button
-    var run_button;
-    var onClick = "";
-    var isRunButton = true;
-    if (isAppJS && serverIP != "") {
-      isRunButton = false;
-      onClick = `onclick="runJSCode(this, '${serverIP}')"`;
+    if (!isExerciseJS || isAppJS) {
+      var run_button;
+      var onClick = "";
+      var isRunButton = true;
+      if (isAppJS && serverIP != "") {
+        isRunButton = false;
+        onClick = `onclick="runJSCode(this, '${serverIP}')"`;
+      }
+      run_button = add_submit_button("fa-play", "btn-success", "Run code", false, isRunButton, onClick);
     }
-    run_button = add_submit_button("fa-play", "btn-success", "Run code", false, isRunButton, onClick);
 
     // If it is JS exercise, we add 3 more buttons
     if (isExerciseJS && serverIP != "") {

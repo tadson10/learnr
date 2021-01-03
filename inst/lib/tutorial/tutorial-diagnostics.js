@@ -1,8 +1,8 @@
-var TutorialDiagnostics = function(tutorial) {
+var TutorialDiagnostics = function (tutorial) {
   this.$tutorial = tutorial;
   var self = this;
 
-  var unmatchedClosingBracket = function(token) {
+  var unmatchedClosingBracket = function (token) {
     return {
       row: token.position.row,
       column: token.position.column,
@@ -11,7 +11,7 @@ var TutorialDiagnostics = function(tutorial) {
     };
   };
 
-  var unmatchedOpeningBracket = function(token) {
+  var unmatchedOpeningBracket = function (token) {
     return {
       row: token.position.row,
       column: token.position.column,
@@ -20,7 +20,7 @@ var TutorialDiagnostics = function(tutorial) {
     };
   };
 
-  var unexpected = function(symbol, token, type) {
+  var unexpected = function (symbol, token, type) {
     return {
       row: token.position.row,
       column: token.position.column,
@@ -29,38 +29,38 @@ var TutorialDiagnostics = function(tutorial) {
     };
   };
 
-  var isSymbol = function(token) {
-    
+  var isSymbol = function (token) {
+
     // this is a cludge so that 'in' is treated as though it were an
     // operator by the diagnostics system
     var value = token.value || "";
     if (value == "in")
       return false;
-      
+
     var type = token.type || "";
     return type == "string" ||
-           type == "constant.numeric" ||
-           type == "constant.language.boolean" ||
-           type == "identifier" ||
-           type == "keyword" ||
-           type == "variable.language";
+      type == "constant.numeric" ||
+      type == "constant.language.boolean" ||
+      type == "identifier" ||
+      type == "keyword" ||
+      type == "variable.language";
   };
 
-  var isOperator = function(token) {
+  var isOperator = function (token) {
     var type = token.type || "";
     return type == "keyword.operator";
   };
 
-  var isUnaryOperator = function(token) {
+  var isUnaryOperator = function (token) {
     var value = token.value || "";
     return value == "+" ||
-           value == "-" ||
-           value == "~" ||
-           value == "!" ||
-           value == "?";
+      value == "-" ||
+      value == "~" ||
+      value == "!" ||
+      value == "?";
   };
 
-  var diagnose = function() {
+  var diagnose = function () {
 
     // alias editor
     var editor = this;
@@ -79,31 +79,31 @@ var TutorialDiagnostics = function(tutorial) {
 
     // fix up rules
     rules["start"].unshift({
-      token : "string",
-      regex : '"(?:(?:\\\\.)|(?:[^"\\\\]))*?"',
-      merge : false,
-      next  : "start"
-    });
-    
-    rules["start"].unshift({
-      token : "string",
-      regex : "'(?:(?:\\\\.)|(?:[^'\\\\]))*?'",
-      merge : false,
-      next  : "start"
-    });
-    
-    rules["start"].unshift({
-      token : "keyword.operator",
-      regex : ":::|::|:=|%%|>=|<=|==|!=|\\->|<\\-|<<\\-|\\|\\||&&|=|\\+|\\-|\\*\\*?|/|\\^|>|<|!|&|\\||~|\\$|:|@|\\?",
-      merge : false,
-      next  : "start"
+      token: "string",
+      regex: '"(?:(?:\\\\.)|(?:[^"\\\\]))*?"',
+      merge: false,
+      next: "start"
     });
 
     rules["start"].unshift({
-      token : "punctuation",
-      regex : "[;,]",
-      merge : false,
-      next  : "start"
+      token: "string",
+      regex: "'(?:(?:\\\\.)|(?:[^'\\\\]))*?'",
+      merge: false,
+      next: "start"
+    });
+
+    rules["start"].unshift({
+      token: "keyword.operator",
+      regex: ":::|::|:=|%%|>=|<=|==|!=|\\->|<\\-|<<\\-|\\|\\||&&|=|\\+|\\-|\\*\\*?|/|\\^|>|<|!|&|\\||~|\\$|:|@|\\?",
+      merge: false,
+      next: "start"
+    });
+
+    rules["start"].unshift({
+      token: "punctuation",
+      regex: "[;,]",
+      merge: false,
+      next: "start"
     });
 
     var tokenizer = new Tokenizer(rules);
@@ -119,7 +119,7 @@ var TutorialDiagnostics = function(tutorial) {
       var tokenized = tokenizer.getLineTokens(lines[i], state);
       for (var j = 0; j < tokenized.tokens.length; j++)
         tokens.push(tokenized.tokens[j]);
-      tokens.push({type: "text", value: "\n"});
+      tokens.push({ type: "text", value: "\n" });
       state = tokenized.state;
     }
 
@@ -132,20 +132,20 @@ var TutorialDiagnostics = function(tutorial) {
     }
 
     // remove whitespace, comments (not relevant for syntax diagnostics)
-    tokens = tokens.filter(function(token) {
+    tokens = tokens.filter(function (token) {
       return token.type !== "comment" && !/^\s+$/.test(token.value);
     });
 
     // state related to our simple diagnostics engine
     var diagnostics = [];
     var bracketStack = [];
-    
+
     // iterate through tokens and look for invalid sequences
     for (var i = 0; i < tokens.length; i++) {
 
       // update local state
       var token = tokens[i];
-      var type  = token.type;
+      var type = token.type;
       var value = token.value;
 
       // handle left brackets
@@ -153,7 +153,7 @@ var TutorialDiagnostics = function(tutorial) {
         bracketStack.push(token);
         continue;
       }
-      
+
       // handle right brackets
       if (value === ")" || value === "}" || value === "]") {
 
@@ -165,7 +165,7 @@ var TutorialDiagnostics = function(tutorial) {
 
         // pop off from bracket stack and verify
         var openBracket = bracketStack.pop();
-        
+
         var ok =
           value === ")" && openBracket.value === "(" ||
           value === "]" && openBracket.value === "[" ||
@@ -220,7 +220,7 @@ var TutorialDiagnostics = function(tutorial) {
 
   };
 
-  var findActiveAceInstance = function() {
+  var findActiveAceInstance = function () {
     var el = document.activeElement;
     while (el != null) {
       if (el.env && el.env.editor)
@@ -230,7 +230,7 @@ var TutorialDiagnostics = function(tutorial) {
     return null;
   };
 
-  var ensureInitialized = function(editor) {
+  var ensureInitialized = function (editor) {
 
     if (editor.$diagnosticsInitialized)
       return;
@@ -238,10 +238,13 @@ var TutorialDiagnostics = function(tutorial) {
     if (!editor.tutorial.diagnostics)
       return;
 
+    if (editor.session.getMode().$id != "ace/mode/r")
+      return;
+
     // register handlers
     var handlers = {};
     handlers["change"] = self.$onChange.bind(editor);
-    handlers["destroy"] = function(event) {
+    handlers["destroy"] = function (event) {
       for (var key in handlers)
         this.off(key, handlers[key]);
     }.bind(editor);
@@ -254,7 +257,7 @@ var TutorialDiagnostics = function(tutorial) {
     editor.$diagnosticsInitialized = 1;
   };
 
-  this.$onChange = function(data) {
+  this.$onChange = function (data) {
     if (!this.tutorial.diagnostics)
       return;
 
@@ -264,7 +267,7 @@ var TutorialDiagnostics = function(tutorial) {
     this.$diagnosticsTimerId = setTimeout(this.$liveDiagnostics, 1000);
   };
 
-  this.$onKeyDown = function(event) {
+  this.$onKeyDown = function (event) {
     var editor = findActiveAceInstance();
     if (editor != null) {
       ensureInitialized(editor);
