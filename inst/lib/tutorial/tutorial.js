@@ -1116,19 +1116,29 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     // prepend the input div to the exercise container
     exercise.prepend(input_div);
 
-    if (isAppJS && serverIP != "") {
-      addOutputTabs(exerciseName, label, serverIP);
-      var webpage_div = $(`<div class="webpageDiv">
-                          <iframe class="webpage" width="100%" height="600" loading="lazy"></iframe></div>`);
-      output_frame.after(webpage_div);
-    }
     // create an output div and append it to the output_frame
     var output_div = $('<div class="tutorial-exercise-output"></div>');
     output_div.attr('id', create_id('output'));
     output_frame.append(output_div);
 
+    if (isAppJS && serverIP != "") {
+      addOutputTabs(exerciseName, label, serverIP);
+      var error_div = $(`<div class="tutorial-exercise-error">
+                        <pre><code></code></pre>
+                        </div>`);
+      output_frame.after(error_div);
 
-    // console.log("ACE EDITOR: " + code_id + ", " + code);
+      var webpage_div = $(`<div class="webpageDiv">
+                          <iframe class="webpage" width="100%" height="600" loading="lazy"></iframe></div>`);
+      output_frame.after(webpage_div);
+
+      var server_output_div = $(`<div class="tutorial-exercise-server-output">
+                                  <pre><code></code></pre>
+                                </div>`);
+      output_frame.after(server_output_div);
+    }
+
+
     // activate the ace editor
     var editor = thiz.$attachAceEditor(code_id, code);
     // console.log(editor.session);
@@ -1338,13 +1348,9 @@ var runJSCode = function (button, serverIP) {
   var credentials = JSON.parse(credString);
   if (credString == null || apiKey == null) {
     console.log("credentials");
-    alert("Before you can send file, you need to reserve port.");
+    bootbox.alert("Before you can send file, you need to reserve port.");
     return;
   }
-
-  // var fileDiv = $(button.parentElement.parentElement.parentElement);
-  // var serverIP = fileDiv.attr("data-serverIP");
-  console.log(serverIP);
 
   // Add spinner to button
   var spinner = 'fa-spinner fa-spin fa-fw';
@@ -1365,10 +1371,32 @@ var runJSCode = function (button, serverIP) {
         // Request finished. Do processing here.
         console.log("RUN CODE DONE" + this.responseText + ", " + this.status);
         console.log(JSON.parse(this.responseText));
+        var response = JSON.parse(this.responseText);
+
+        var exercise = $($(button).closest(".tutorial-exercise"))[0];
+        console.log(exercise);
+        // Show output to user
+        // var output = $(exercise.getElementsByClassName("tutorial-exercise-output")[0]);
+        var output = exercise.getElementsByClassName("tutorial-exercise-server-output")[0].getElementsByTagName("code")[0];
+        output.innerHTML = response.stdout;
+        console.log(output);
+
+        // var divOutput = $(`<pre>
+        //                   <code>${response.stdout}</code>
+        //                   </pre>`);
+        // output.append(divOutput);
+
+        // Show error to user
+        var error = exercise.getElementsByClassName("tutorial-exercise-error")[0].getElementsByTagName("code")[0];
+        var regTerminated = /\/var\/www\/html\/jobe\/application\/libraries\/..\/..\/runguard\/runguard: warning: command terminated with signal 9/g;
+        var match = response.stderr.match(regTerminated);
+        if (match && match.length == 1)
+          error.innerHTML = 'Command terminated with signal 9';
+        else
+          error.innerHTML = response.stderr;
       }
       else
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
-      // alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
   // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
@@ -1669,12 +1697,12 @@ function removeApiKey() {
 
 // create HTML element for API KEY
 function addApiKeyHtml() {
-  return `<span>
-            <label for="apiKey">API KEY:</label>
-            <input type="text" name="apiKey" class="apiKey" width: 260px;>
-            <button type="button" onclick="saveApiKey(this)">Save</button>
-            <button type="button" onclick="removeApiKey()">Remove</button>
-          <span>`;
+  return `<label for="apiKey">API KEY</label>
+          <form class="form-inline" style="margin-bottom: 10px;">
+            <input type="text" name="apiKey" class="apiKey form-control" style="width: 277px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveApiKey(this)">Save</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="removeApiKey()">Remove</button>
+          </form>`;
 }
 
 // Refresh ALL iframes
@@ -1683,10 +1711,12 @@ function refreshWebpageDiv(serverIP, port) {
   for (var i = 0; i < iframes.length; i++)
     iframes[i].src = `http://${serverIP}:${port}`;
 }
+
 // Toolbar for output tabs - only called for app.js file
 function addOutputTabs(exerciseName, label, serverIP) {
-  var tabs = $(`<div id="${exerciseName}-output-tabs" class="tab">                
+  var tabs = $(`<div id="${exerciseName}-output-tabs" class="tab outputTab">                
                             <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Output</button>
+                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Error</button>
                             <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', '${serverIP}')">Webpage</button>
                           </div>`);
   // get div with input and add output toolbar after it
@@ -1701,14 +1731,30 @@ function openOutTab(button, label, exerciseName, serverIP) {
   // refresh only when Webpage tab is clicked and we have credentials and api key in local storage
   if (serverIP && apiKey && credentials)
     refreshWebpageDiv(serverIP, JSON.parse(credentials).port);
-  var className, exercise, tabcontent, tablinks;
+  var classNameHide, classNameShow, exercise, tabcontent, tablinks;
   // if we clicked Output, we want to hide div with class webpage
-  className = button.innerHTML == "Output" ? "webpageDiv" : "tutorial-exercise-output-frame";
+  switch (button.innerHTML) {
+    case "Output":
+      classNameHide = ".tutorial-exercise-error, .webpageDiv";
+      classNameShow = "tutorial-exercise-server-output";
+      break;
+    case "Error":
+      classNameHide = ".tutorial-exercise-server-output, .webpageDiv";
+      classNameShow = "tutorial-exercise-error";
+      break;
+    default:
+      classNameHide = ".tutorial-exercise-error, .tutorial-exercise-server-output";
+      classNameShow = "webpageDiv";
+      break;
+  }
+  // classNameHide = button.innerHTML == "Output" ? "webpageDiv" : "tutorial-exercise-server-output";
 
-  // Hide other tab
+  // Hide other tabs
   exercise = $('[data-label="' + label + '"]')[0];
-  tabcontent = $(exercise.getElementsByClassName(className));
-  tabcontent[0].style.display = "none";
+  tabcontent = $(exercise.querySelectorAll(classNameHide));
+  for (let i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
 
   // DIV with tab buttons
   var outTabButtons = document.getElementById(exerciseName + '-output-tabs');
@@ -1720,8 +1766,7 @@ function openOutTab(button, label, exerciseName, serverIP) {
   }
 
   // show the chosen tab and mark the button/tab as active
-  className = button.innerHTML == "Output" ? "tutorial-exercise-output-frame" : "webpageDiv";
-  $(exercise.getElementsByClassName(className)).css("display", "block");
+  exercise.getElementsByClassName(classNameShow)[0].style.removeProperty('display');
   button.className += " active";
 }
 
@@ -1776,7 +1821,7 @@ function openFileTab(button, label, exerciseName) {
   }
 
   // show the chosen tab and mark the button/tab as active
-  $('[data-label="' + label + '"]').css("display", "block");
+  $('[data-label="' + label + '"]').css("display", "");
   button.className += " active";
 }
 

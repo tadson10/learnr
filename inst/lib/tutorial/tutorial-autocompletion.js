@@ -215,7 +215,7 @@ function TutorialCompleter(tutorial) {
       ensureInitialized(editor);
 
     // bail if completions are disabled for this editor
-    if (editor !== null && !editor.tutorial.completion)
+    if (editor !== null && (!editor.tutorial.completion || editor.session.getMode().$id !== "ace/mode/r"))
       return;
 
     var keys = new KeyCombination(event);

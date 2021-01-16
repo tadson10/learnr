@@ -65,8 +65,10 @@ setup_exercise_handler <- function(exercise_rx, session) {
       # Check if serverIP is defined 
       # If it IS, code is not executed here but at JOBE server, so we remove the code
       if(exercise$options$exercise.serverIP == "" && exercise$options$exercise.caption == "app.js") {
+        exercise$code <- gsub("\\\\", "\\\\\\\\", exercise$code)
+        exercise$code <- gsub("'", "\\\\'", exercise$code)
         exercise$code <- paste0('ct <- V8::new_context()\n',
-                              'ct$eval(\'', gsub("'", "\\\\'", exercise$code) , '\')')
+                              'ct$eval(\'', exercise$code, '\')')
       }
       else {
         # we don't want the code to be executed here, we just want to save it

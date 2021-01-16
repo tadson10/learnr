@@ -142,3 +142,7 @@
 .tab button.active {
   background-color: #ccc;
 }
+
+.outputTab {
+  margin-bottom: 6px;
+}
