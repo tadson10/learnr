@@ -1268,7 +1268,6 @@ var sendFile = function (button, fileName, serverIP, label) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
-    console.log("credentials");
     alert("Before you can send file, you need to reserve port.");
     return;
   }
@@ -1319,10 +1318,14 @@ var sendFile = function (button, fileName, serverIP, label) {
       if (xhr.responseText) {
         // Request finished. Do processing here.
         console.log("PUT FILE DONE" + this.responseText + ", " + this.status);
+        var response = JSON.parse(this.responseText);
+        var message = response.message ? response.message : response;
+        // Show error response to user
+        if (this.status != 201)
+          bootbox.alert(message);
       }
       else
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
-      // alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
   // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
@@ -1347,7 +1350,6 @@ var runJSCode = function (button, serverIP) {
   var credString = window.localStorage.getItem("credentials");
   var credentials = JSON.parse(credString);
   if (credString == null || apiKey == null) {
-    console.log("credentials");
     bootbox.alert("Before you can send file, you need to reserve port.");
     return;
   }
@@ -1356,6 +1358,13 @@ var runJSCode = function (button, serverIP) {
   var spinner = 'fa-spinner fa-spin fa-fw';
   var runIcon = button.children[0];
   buttonExecutionStart(button, runIcon, spinner);
+
+  // Remove output and error fields
+  var exercise = $($(button).closest(".tutorial-exercise"))[0];
+  var error = exercise.getElementsByClassName("tutorial-exercise-error")[0].getElementsByTagName("code")[0];
+  var output = exercise.getElementsByClassName("tutorial-exercise-server-output")[0].getElementsByTagName("code")[0];
+  error.innerHTML = "";
+  output.innerHTML = "";
 
   var xhr = new XMLHttpRequest();
   xhr.open("POST", 'http://' + serverIP + '/jobe/index.php/restapi/runs', true);
@@ -1373,11 +1382,9 @@ var runJSCode = function (button, serverIP) {
         console.log(JSON.parse(this.responseText));
         var response = JSON.parse(this.responseText);
 
-        var exercise = $($(button).closest(".tutorial-exercise"))[0];
         console.log(exercise);
         // Show output to user
         // var output = $(exercise.getElementsByClassName("tutorial-exercise-output")[0]);
-        var output = exercise.getElementsByClassName("tutorial-exercise-server-output")[0].getElementsByTagName("code")[0];
         output.innerHTML = response.stdout;
         console.log(output);
 
@@ -1386,14 +1393,19 @@ var runJSCode = function (button, serverIP) {
         //                   </pre>`);
         // output.append(divOutput);
 
-        // Show error to user
-        var error = exercise.getElementsByClassName("tutorial-exercise-error")[0].getElementsByTagName("code")[0];
-        var regTerminated = /\/var\/www\/html\/jobe\/application\/libraries\/..\/..\/runguard\/runguard: warning: command terminated with signal 9/g;
-        var match = response.stderr.match(regTerminated);
-        if (match && match.length == 1)
-          error.innerHTML = 'Command terminated with signal 9';
-        else
-          error.innerHTML = response.stderr;
+        var message = response.message ? response.message : response;
+        // Error occurred
+        if (this.status != 200)
+          bootbox.alert(message);
+        else {
+          // Show error to user
+          var regTerminated = /\/var\/www\/html\/jobe\/application\/libraries\/..\/..\/runguard\/runguard: warning: command terminated with signal 9/g;
+          var match = response.stderr.match(regTerminated);
+          if (match && match.length == 1)
+            error.innerHTML = 'Execution stoppped.';
+          else
+            error.innerHTML = response.stderr;
+        }
       }
       else
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
@@ -1469,9 +1481,14 @@ function stopExecution(button, serverIP) {
       console.log("STOP " + this.status);
       console.log(xhttp.responseText);
 
+
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
-        alert(xhttp.responseText);
+        var response = JSON.parse(this.responseText);
+        var message = response.message ? response.message : response;
+        // Error occurred
+        if (this.status != 201)
+          bootbox.alert(message);
       }
       else {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
@@ -1715,9 +1732,9 @@ function refreshWebpageDiv(serverIP, port) {
 // Toolbar for output tabs - only called for app.js file
 function addOutputTabs(exerciseName, label, serverIP) {
   var tabs = $(`<div id="${exerciseName}-output-tabs" class="tab outputTab">                
-                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Output</button>
-                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Error</button>
-                            <button class="tablinks" onclick="openOutTab(this, '${label}', '${exerciseName}', '${serverIP}')">Webpage</button>
+                            <button class="tablinks btnOutput" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Output</button>
+                            <button class="tablinks btnOutput" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Error</button>
+                            <button class="tablinks btnOutput" onclick="openOutTab(this, '${label}', '${exerciseName}', '${serverIP}')">Webpage</button>
                           </div>`);
   // get div with input and add output toolbar after it
   var firstFileOfExercise = $(document.getElementById(`tutorial-exercise-${label}-input`));

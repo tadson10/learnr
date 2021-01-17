@@ -146,3 +146,7 @@
 .outputTab {
   margin-bottom: 6px;
 }
+
+.btnOutput {
+  padding: 9px 10px !important;
+}
