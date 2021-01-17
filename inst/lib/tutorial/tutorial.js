@@ -1268,7 +1268,7 @@ var sendFile = function (button, fileName, serverIP, label) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
-    alert("Before you can send file, you need to reserve port.");
+    bootbox.alert("Before you can send file, you need to reserve port.");
     return;
   }
 
@@ -1328,12 +1328,6 @@ var sendFile = function (button, fileName, serverIP, label) {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
-  // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
-  // var datoteka = {
-  //   "file_contents": btoa(code),
-  //   "dir": "proba"
-  // };
-
 
   console.log(body);
   // If there is no apiKEy in local storage, then apiKey == null
@@ -1373,7 +1367,6 @@ var runJSCode = function (button, serverIP) {
   xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
   xhr.onreadystatechange = function () { // Call a function when the state changes.
-    //console.log("RUN CODE " + this.responseText + ", " + this.status);
     if (this.readyState === XMLHttpRequest.DONE) {
       buttonExecutionEnd(button, runIcon, spinner);
       if (xhr.responseText) {
@@ -1382,16 +1375,8 @@ var runJSCode = function (button, serverIP) {
         console.log(JSON.parse(this.responseText));
         var response = JSON.parse(this.responseText);
 
-        console.log(exercise);
         // Show output to user
-        // var output = $(exercise.getElementsByClassName("tutorial-exercise-output")[0]);
         output.innerHTML = response.stdout;
-        console.log(output);
-
-        // var divOutput = $(`<pre>
-        //                   <code>${response.stdout}</code>
-        //                   </pre>`);
-        // output.append(divOutput);
 
         var message = response.message ? response.message : response;
         // Error occurred
@@ -1411,12 +1396,14 @@ var runJSCode = function (button, serverIP) {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
-  // "Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7",
+
+  // Get timelimit for execution on JOBE server
+  var timelimit = JSON.parse(exercise.getElementsByClassName("panel-body")[0].getElementsByTagName("script")[0].innerHTML)["exercise.timelimit"];
   var body = {
     "run_spec": {
       "language_id": "nodejs",
       "sourcefilename": "app.js",
-      "sourcecode": ""
+      "timelimit": timelimit ? timelimit : null
     }
   };
 
@@ -1434,9 +1421,6 @@ var runJSCode = function (button, serverIP) {
 
 function buttonExecutionStart(button, runIcon, spinner) {
   // Add spinner and disable button
-  // var spinner = 'fa-spinner fa-spin fa-fw';
-  console.log(button.children[0]);
-  // var runIcon = button.children[0];
   $(runIcon).removeClass(button.getAttribute('data-icon'));
   $(runIcon).addClass(spinner);
   $(button).addClass('disabled');
@@ -1456,7 +1440,7 @@ function stopExecution(button, serverIP) {
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
     console.log("credentials");
-    alert("Before you can send file, you need to reserve port.");
+    bootbox.alert("Before you can send file, you need to reserve port.");
     return;
   }
 
@@ -1512,7 +1496,7 @@ function stopExecution(button, serverIP) {
 var getFreePort = function (button, serverIP) {
   var apiKey = window.localStorage.getItem("apiKey");
   if (apiKey == null) {
-    alert("API KEY is missing!");
+    bootbox.alert("API KEY is missing!");
     return;
   }
   console.log(serverIP);

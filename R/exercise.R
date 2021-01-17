@@ -44,6 +44,10 @@ setup_exercise_handler <- function(exercise_rx, session) {
     if (is.null(timelimit))
       timelimit <- getOption("tutorial.exercise.timelimit", default = 30)
 
+    # limit maximum execution time
+    if(timelimit > 60)
+      timelimit <- 60
+
     # get exercise evaluator factory function (allow replacement via global option)
     evaluator_factory <- getOption("tutorial.exercise.evaluator", default = NULL)
     if (is.null(evaluator_factory)) {
