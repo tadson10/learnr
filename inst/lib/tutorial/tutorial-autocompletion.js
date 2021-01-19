@@ -74,6 +74,7 @@ function TutorialCompleter(tutorial) {
   }
 
   function initializeCompletionEngine(editor) {
+
     editor.completers = editor.completers || [];
     editor.completers.push({
 
@@ -156,9 +157,6 @@ function TutorialCompleter(tutorial) {
     if (editor.$autocompletionInitialized)
       return;
 
-    if (editor.session.getMode().$id != "ace/mode/r")
-      return;
-
     initializeAceEventListeners(editor);
     initializeCompletionEngine(editor);
     initializeSetupChunk(editor);
@@ -215,7 +213,7 @@ function TutorialCompleter(tutorial) {
       ensureInitialized(editor);
 
     // bail if completions are disabled for this editor
-    if (editor !== null && (!editor.tutorial.completion || editor.session.getMode().$id !== "ace/mode/r"))
+    if (editor !== null && !editor.tutorial.completion)
       return;
 
     var keys = new KeyCombination(event);

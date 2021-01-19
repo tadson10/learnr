@@ -134,6 +134,11 @@ install_knitr_hooks <- function() {
         serverIP <- options$exercise.serverIP
         id <- options$exercise.id
         
+        if(type != "r") {
+          completion  <- 0
+          diagnostics <- 0
+        }
+
         paste0('<div class="tutorial-', class,
                '" data-label="', options$label,
                '" data-caption="', caption,

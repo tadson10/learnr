@@ -238,9 +238,6 @@ var TutorialDiagnostics = function (tutorial) {
     if (!editor.tutorial.diagnostics)
       return;
 
-    if (editor.session.getMode().$id != "ace/mode/r")
-      return;
-
     // register handlers
     var handlers = {};
     handlers["change"] = self.$onChange.bind(editor);
