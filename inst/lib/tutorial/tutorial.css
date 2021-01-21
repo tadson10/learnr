@@ -150,3 +150,7 @@
 .btnOutput {
   padding: 9px 10px !important;
 }
+
+select:hover {
+  cursor: pointer;
+}

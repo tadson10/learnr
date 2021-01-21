@@ -717,7 +717,7 @@ Tutorial.prototype.$initializeExercises = function () {
   // Simulate click on first tab for every JS exercise
   openFirstTab();
 
-  // Prevernt favicon error
+  // Prevent favicon error
   $(document.getElementsByTagName('head')[0]).append($(`<link rel="shortcut icon" href="#">`));
 };
 
@@ -1593,6 +1593,16 @@ var getFreePort = function (button, serverIP) {
   }
   // else
   xhttp.send(credentials);
+}
+
+// Function to change theme for all editors
+function changeTheme(theme) {
+  console.log("CHANGE THEME: " + theme);
+  var editorDivs = document.getElementsByClassName("tutorial-exercise-code-editor");
+  for (var i = 0; i < editorDivs.length; i++) {
+    var editor = ace.edit(editorDivs[i].id);
+    editor.setTheme("ace/theme/" + theme);
+  }
 }
 
 // Add HTML element for PORT to all file toolbars

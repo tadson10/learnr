@@ -1,292 +1,311 @@
 
 
-$(document).ready(function() {
+$(document).ready(function () {
 
-    var titleText = '';
-    var currentTopicIndex = -1;
-    var docProgressiveReveal = false;
-    var docAllowSkip = false;
-    var topics = [];
+  var titleText = '';
+  var currentTopicIndex = -1;
+  var docProgressiveReveal = false;
+  var docAllowSkip = false;
+  var topics = [];
 
-    var scrollLastSectionToView = false;
-    var scrollLastSectionPosition = 0;
+  var scrollLastSectionToView = false;
+  var scrollLastSectionPosition = 0;
 
-    function setCurrentTopic(topicIndex) {
-      if (topics.length === 0) return;
+  function setCurrentTopic(topicIndex) {
+    if (topics.length === 0) return;
 
-      topicIndex = topicIndex * 1;  // convert strings to a number
+    topicIndex = topicIndex * 1;  // convert strings to a number
 
-      if (topicIndex == currentTopicIndex) return;
+    if (topicIndex == currentTopicIndex) return;
 
-      if (currentTopicIndex != -1) {
-        var el = $(topics[currentTopicIndex].jqElement);
-        el.trigger('hide');
-        el.removeClass('current');
-        el.trigger('hidden');
-        $(topics[currentTopicIndex].jqListElement).removeClass('current');
-      }
-
-      var currentEl = $(topics[topicIndex].jqElement);
-      currentEl.trigger('show');
-      currentEl.addClass('current');
-      currentEl.trigger('shown');
-      $(topics[topicIndex].jqListElement).addClass('current');
-      currentTopicIndex = topicIndex;
-
-      // always start a topic with a the scroll pos at the top
-      // we do this in part to prevent the scroll to view behavior of hash navigation
-      setTimeout(function() {$(document).scrollTop(0);}, 0);
+    if (currentTopicIndex != -1) {
+      var el = $(topics[currentTopicIndex].jqElement);
+      el.trigger('hide');
+      el.removeClass('current');
+      el.trigger('hidden');
+      $(topics[currentTopicIndex].jqListElement).removeClass('current');
     }
 
-    function updateLocation(topicIndex) {
-      var baseUrl = window.location.href.replace(window.location.hash,"");
-      var href = baseUrl + '#' + topics[topicIndex].id;
-      window.location = href;
-    }
+    var currentEl = $(topics[topicIndex].jqElement);
+    currentEl.trigger('show');
+    currentEl.addClass('current');
+    currentEl.trigger('shown');
+    $(topics[topicIndex].jqListElement).addClass('current');
+    currentTopicIndex = topicIndex;
 
-    function handleTopicClick(event) {
-      hideFloatingTopics();
-      updateLocation(this.getAttribute('index'));
-    }
+    // always start a topic with a the scroll pos at the top
+    // we do this in part to prevent the scroll to view behavior of hash navigation
+    setTimeout(function () { $(document).scrollTop(0); }, 0);
+  }
 
-    function showFloatingTopics() {
-      $('.topicsList').removeClass('hideFloating');
-    }
+  function updateLocation(topicIndex) {
+    var baseUrl = window.location.href.replace(window.location.hash, "");
+    var href = baseUrl + '#' + topics[topicIndex].id;
+    window.location = href;
+  }
 
-    function hideFloatingTopics() {
-      $('.topicsList').addClass('hideFloating');
-    }
+  function handleTopicClick(event) {
+    hideFloatingTopics();
+    updateLocation(this.getAttribute('index'));
+  }
 
-    function updateVisibilityOfTopicElements(topicIndex) {
-      var topic = topics[topicIndex];
+  function showFloatingTopics() {
+    $('.topicsList').removeClass('hideFloating');
+  }
 
-      if (!topic.progressiveReveal) return;
+  function hideFloatingTopics() {
+    $('.topicsList').addClass('hideFloating');
+  }
 
-      var showSection = true;
+  function updateVisibilityOfTopicElements(topicIndex) {
+    var topic = topics[topicIndex];
 
-      var lastVisibleSection = null;
+    if (!topic.progressiveReveal) return;
 
-      for (i = 0; i < topic.sections.length; i++ ) {
-        var section = topic.sections[i];
-        var sectionEl = $(section.jqElement);
-        if (showSection) {
-          sectionEl.trigger('show');
-          sectionEl.removeClass('hide');
-          sectionEl.trigger('shown');
-          if (section.skipped) {
-            sectionEl.removeClass('showSkip');
-          }
-          else {
-            sectionEl.addClass('showSkip');
-            lastVisibleSection = sectionEl;
-          }
+    var showSection = true;
+
+    var lastVisibleSection = null;
+
+    for (i = 0; i < topic.sections.length; i++) {
+      var section = topic.sections[i];
+      var sectionEl = $(section.jqElement);
+      if (showSection) {
+        sectionEl.trigger('show');
+        sectionEl.removeClass('hide');
+        sectionEl.trigger('shown');
+        if (section.skipped) {
+          sectionEl.removeClass('showSkip');
         }
         else {
-          sectionEl.trigger('hide');
-          sectionEl.addClass('hide');
-          sectionEl.trigger('hidden');
+          sectionEl.addClass('showSkip');
+          lastVisibleSection = sectionEl;
         }
-        showSection = (showSection && section.skipped);
-      }
-
-      if (!topic.progressiveReveal || showSection) { // all sections are visible
-        $(topic.jqElement).removeClass('hideActions');
       }
       else {
-        $(topic.jqElement).addClass('hideActions');
+        sectionEl.trigger('hide');
+        sectionEl.addClass('hide');
+        sectionEl.trigger('hidden');
       }
-
-      if (scrollLastSectionToView && lastVisibleSection) {
-        scrollLastSectionPosition = lastVisibleSection.offset().top - 28;
-        setTimeout(function() {
-          $('html, body').animate({
-            scrollTop: scrollLastSectionPosition
-          }, 300);
-        }, 60)
-      }
-      scrollLastSectionToView = false;
+      showSection = (showSection && section.skipped);
     }
 
-    function updateTopicProgressBar(topicIndex) {
-      var topic = topics[topicIndex];
-
-      var percentToDo;
-      if (topic.sections.length == 0) {
-        percentToDo = !topic.topicCompleted * 100;
-      }
-      else {
-        percentToDo = (1 - topic.sectionsSkipped/topic.sections.length) * 100;
-      }
-
-      $(topic.jqListElement).css('background-position-y', percentToDo + '%' );
-
+    if (!topic.progressiveReveal || showSection) { // all sections are visible
+      $(topic.jqElement).removeClass('hideActions');
+    }
+    else {
+      $(topic.jqElement).addClass('hideActions');
     }
 
-    function handleSkipClick(event) {
-      var sectionId = this.getAttribute('data-section-id');
-      // get the topic & section indexes
-      var topicIndex = -1;
-      var sectionIndex = -1;
-      var topic;
-      var section;
-      $.each(topics, function( ti, t) {
-        $.each(t.sections, function( si, s) {
-          if (sectionId == s.id) {
-            topicIndex = ti;
-            sectionIndex = si;
-            topic = t;
-            section = s;
-            return false;
-          }
-        })
-        return topicIndex == -1;
+    if (scrollLastSectionToView && lastVisibleSection) {
+      scrollLastSectionPosition = lastVisibleSection.offset().top - 28;
+      setTimeout(function () {
+        $('html, body').animate({
+          scrollTop: scrollLastSectionPosition
+        }, 300);
+      }, 60)
+    }
+    scrollLastSectionToView = false;
+  }
+
+  function updateTopicProgressBar(topicIndex) {
+    var topic = topics[topicIndex];
+
+    var percentToDo;
+    if (topic.sections.length == 0) {
+      percentToDo = !topic.topicCompleted * 100;
+    }
+    else {
+      percentToDo = (1 - topic.sectionsSkipped / topic.sections.length) * 100;
+    }
+
+    $(topic.jqListElement).css('background-position-y', percentToDo + '%');
+
+  }
+
+  function handleSkipClick(event) {
+    var sectionId = this.getAttribute('data-section-id');
+    // get the topic & section indexes
+    var topicIndex = -1;
+    var sectionIndex = -1;
+    var topic;
+    var section;
+    $.each(topics, function (ti, t) {
+      $.each(t.sections, function (si, s) {
+        if (sectionId == s.id) {
+          topicIndex = ti;
+          sectionIndex = si;
+          topic = t;
+          section = s;
+          return false;
+        }
       })
-      // if the section has exercises and is not complete, don't skip - put up message
-      if (section.exercises.length && !section.completed && !section.allowSkip) {
-        var exs = section.exercises.length == 1 ? 'exercise' : 'exercises';
-        bootbox.alert("You must complete the " + exs + " in this section before continuing.");
+      return topicIndex == -1;
+    })
+    // if the section has exercises and is not complete, don't skip - put up message
+    if (section.exercises.length && !section.completed && !section.allowSkip) {
+      var exs = section.exercises.length == 1 ? 'exercise' : 'exercises';
+      bootbox.alert("You must complete the " + exs + " in this section before continuing.");
+    }
+    else {
+      if (sectionIndex == topic.sections.length - 1) {
+        // last section on the page
+        if (topicIndex < topics.length - 1) {
+          updateLocation(currentTopicIndex + 1);
+        }
       }
       else {
-        if (sectionIndex == topic.sections.length - 1) {
-          // last section on the page
-          if (topicIndex < topics.length - 1) {
-            updateLocation(currentTopicIndex + 1);
-          }
-        }
-        else {
-          scrollLastSectionToView = true;
-        }
-        // update UI
-        sectionSkipped([section.jqElement]);
-        // notify server
-        tutorial.skipSection(sectionId);
+        scrollLastSectionToView = true;
       }
+      // update UI
+      sectionSkipped([section.jqElement]);
+      // notify server
+      tutorial.skipSection(sectionId);
     }
+  }
 
-    function handleNextTopicClick(event) {
-      // any sections in this topic? if not, mark it as skipped
-      if (topics[currentTopicIndex].sections.length == 0) {
-        tutorial.skipSection(topics[currentTopicIndex].id);
+  function handleNextTopicClick(event) {
+    // any sections in this topic? if not, mark it as skipped
+    if (topics[currentTopicIndex].sections.length == 0) {
+      tutorial.skipSection(topics[currentTopicIndex].id);
+    }
+    updateLocation(currentTopicIndex + 1);
+  }
+
+  function handlePreviousTopicClick(event) {
+    updateLocation(currentTopicIndex - 1);
+  }
+
+  // build the list of topics in the document
+  // and create/adorn the DOM for them as needed
+  function buildTopicsList() {
+    var topicsList = $('<div class="topicsList hideFloating"></div>');
+
+    var topicsHeader = $('<div class="topicsHeader"></div>');
+    topicsHeader.append($('<h2 class="tutorialTitle">' + titleText + '</h2>'));
+    var topicsCloser = $('<div class="paneCloser"></div>');
+    topicsCloser.on('click', hideFloatingTopics);
+    topicsHeader.append(topicsCloser);
+    topicsList.append(topicsHeader);
+
+    $('#doc-metadata').appendTo(topicsList);
+
+
+    var topicsDOM = $('.section.level2');
+    topicsDOM.each(function (topicIndex, topicElement) {
+
+      var topic = {};
+      topic.id = $(topicElement).attr('id');
+      topic.exercisesCompleted = 0;
+      topic.sectionsCompleted = 0;
+      topic.sectionsSkipped = 0;
+      topic.topicCompleted = false; // only relevant if topic has 0 exercises
+      topic.jqElement = topicElement;
+      topic.jqTitleElement = $(topicElement).children('h2')[0];
+      topic.titleText = topic.jqTitleElement.innerText;
+      var progressiveAttr = $(topicElement).attr('data-progressive');
+      if (typeof progressiveAttr !== typeof undefined && progressiveAttr !== false) {
+        topic.progressiveReveal = (progressiveAttr == 'true' || progressiveAttr == 'TRUE');
       }
-      updateLocation(currentTopicIndex + 1);
-    }
+      else {
+        topic.progressiveReveal = docProgressiveReveal;
+      }
 
-    function handlePreviousTopicClick(event) {
-      updateLocation(currentTopicIndex - 1);
-    }
+      jqTopic = $('<div class="topic" index="' + topicIndex + '">' + topic.titleText + '</div>');
+      jqTopic.on('click', handleTopicClick);
+      topic.jqListElement = jqTopic;
+      $(topicsList).append(jqTopic);
 
-    // build the list of topics in the document
-    // and create/adorn the DOM for them as needed
-    function buildTopicsList() {
-      var topicsList = $('<div class="topicsList hideFloating"></div>');
+      var topicActions = $('<div class="topicActions"></div>');
+      if (topicIndex > 0) {
+        var prevButton = $('<button class="btn btn-default">Previous Topic</button>');
+        prevButton.on('click', handlePreviousTopicClick);
+        topicActions.append(prevButton);
+      }
+      if (topicIndex < topicsDOM.length - 1) {
+        var nextButton = $('<button class="btn btn-primary">Next Topic</button>');
+        nextButton.on('click', handleNextTopicClick);
+        topicActions.append(nextButton);
+      }
+      $(topicElement).append(topicActions);
 
-      var topicsHeader = $('<div class="topicsHeader"></div>');
-      topicsHeader.append($('<h2 class="tutorialTitle">' + titleText + '</h2>'));
-      var topicsCloser = $('<div class="paneCloser"></div>');
-      topicsCloser.on('click', hideFloatingTopics);
-      topicsHeader.append(topicsCloser);
-      topicsList.append(topicsHeader);
+      topic.sections = [];
+      var sectionsDOM = $(topicElement).children('.section.level3');
+      sectionsDOM.each(function (sectionIndex, sectionElement) {
 
-      $('#doc-metadata').appendTo(topicsList);
-
-
-      var topicsDOM = $('.section.level2');
-      topicsDOM.each( function(topicIndex, topicElement) {
-
-        var topic = {};
-        topic.id = $(topicElement).attr('id');
-        topic.exercisesCompleted = 0;
-        topic.sectionsCompleted = 0;
-        topic.sectionsSkipped = 0;
-        topic.topicCompleted = false; // only relevant if topic has 0 exercises
-        topic.jqElement = topicElement;
-        topic.jqTitleElement = $(topicElement).children('h2')[0];
-        topic.titleText = topic.jqTitleElement.innerText;
-        var progressiveAttr = $(topicElement).attr('data-progressive');
-        if (typeof progressiveAttr !== typeof undefined && progressiveAttr !== false) {
-          topic.progressiveReveal = (progressiveAttr == 'true' || progressiveAttr == 'TRUE');
-        }
-        else {
-          topic.progressiveReveal = docProgressiveReveal;
+        if (topic.progressiveReveal) {
+          var continueButton = $('<button class="btn btn-default skip" data-section-id="' + sectionElement.id + '">Continue</button>');
+          continueButton.on('click', handleSkipClick);
+          var actions = $('<div class="exerciseActions"></div>');
+          actions.append(continueButton);
+          $(sectionElement).append(actions);
         }
 
-        jqTopic = $('<div class="topic" index="' + topicIndex + '">' + topic.titleText + '</div>');
-        jqTopic.on('click', handleTopicClick);
-        topic.jqListElement = jqTopic;
-        $(topicsList).append(jqTopic);
-
-        var topicActions = $('<div class="topicActions"></div>');
-        if (topicIndex > 0) {
-          var prevButton = $('<button class="btn btn-default">Previous Topic</button>');
-          prevButton.on('click', handlePreviousTopicClick);
-          topicActions.append(prevButton);
-        }
-        if (topicIndex < topicsDOM.length - 1) {
-          var nextButton = $('<button class="btn btn-primary">Next Topic</button>');
-          nextButton.on('click', handleNextTopicClick);
-          topicActions.append(nextButton);
-        }
-        $(topicElement).append(topicActions);
-
-        topic.sections = [];
-        var sectionsDOM = $(topicElement).children('.section.level3');
-        sectionsDOM.each( function( sectionIndex, sectionElement) {
-
-          if (topic.progressiveReveal) {
-            var continueButton = $('<button class="btn btn-default skip" data-section-id="' + sectionElement.id + '">Continue</button>');
-            continueButton.on('click', handleSkipClick);
-            var actions = $('<div class="exerciseActions"></div>');
-            actions.append(continueButton);
-            $(sectionElement).append(actions);
-          }
-
-          var section = {};
-          section.exercises = [];
-          var exercisesDOM = $(sectionElement).children('.tutorial-exercise');
-          exercisesDOM.each(function(exerciseIndex, exerciseElement) {
-            var exercise = {};
-            exercise.dataLabel = $(exerciseElement).attr('data-label');
-            exercise.completed = false;
-            exercise.jqElement = exerciseElement;
-            section.exercises.push(exercise);
-          });
-
-          var allowSkipAttr = $(sectionElement).attr('data-allow-skip');
-          var sectionAllowSkip = docAllowSkip;
-          if (typeof allowSkipAttr !== typeof undefined && allowSkipAttr !== false) {
-            sectionAllowSkip = (allowSkipAttr == 'true' || allowSkipAttr == 'TRUE');
-          }
-
-          section.id = sectionElement.id;
-          section.completed = false;
-          section.allowSkip = sectionAllowSkip;
-          section.skipped = false;
-          section.jqElement = sectionElement;
-          topic.sections.push(section);
-
+        var section = {};
+        section.exercises = [];
+        var exercisesDOM = $(sectionElement).children('.tutorial-exercise');
+        exercisesDOM.each(function (exerciseIndex, exerciseElement) {
+          var exercise = {};
+          exercise.dataLabel = $(exerciseElement).attr('data-label');
+          exercise.completed = false;
+          exercise.jqElement = exerciseElement;
+          section.exercises.push(exercise);
         });
 
-        topics.push(topic);
+        var allowSkipAttr = $(sectionElement).attr('data-allow-skip');
+        var sectionAllowSkip = docAllowSkip;
+        if (typeof allowSkipAttr !== typeof undefined && allowSkipAttr !== false) {
+          sectionAllowSkip = (allowSkipAttr == 'true' || allowSkipAttr == 'TRUE');
+        }
+
+        section.id = sectionElement.id;
+        section.completed = false;
+        section.allowSkip = sectionAllowSkip;
+        section.skipped = false;
+        section.jqElement = sectionElement;
+        topic.sections.push(section);
+
       });
 
-      var topicsFooter = $('<div class="topicsFooter"></div>');
+      topics.push(topic);
+    });
 
-      var resetButton = $('<span class="resetButton">Start Over</span>');
-      resetButton.on('click', function() {
-        bootbox.confirm("Are you sure you want to start over? (all exercise progress will be reset)",
-                        function(result) {
-                          if (result)
-                            tutorial.startOver();
-                        });
-      });
-      topicsFooter.append(resetButton);
-      topicsList.append(topicsFooter);
+    var topicsFooter = $('<div class="topicsFooter"></div>');
 
-      return topicsList;
+    var resetButton = $('<span class="resetButton">Start Over</span>');
+    resetButton.on('click', function () {
+      bootbox.confirm("Are you sure you want to start over? (all exercise progress will be reset)",
+        function (result) {
+          if (result)
+            tutorial.startOver();
+        });
+    });
+    topicsFooter.append(resetButton);
+    topicsList.append(topicsFooter);
 
-    }
+    // Add themes select
+    addThemesSelect(topicsList);
 
-    // transform the DOM here
+    return topicsList;
+
+  }
+
+  // Add element with themes
+  function addThemesSelect(topicsList) {
+    console.log("ADD THEMES: ");
+    // var topicsList = document.getElementsByClassName("topicsList")[0];
+    var themes = $(`<label for="themes">Theme</label>
+                <select id="themes" onchange="changeTheme(this.value)">
+                  <option disabled>Select theme</option>
+                  <option value="textmate">Textmate</option>
+                  <option value="merbivore">Merbivore</option>
+                  <option value="merbivore_soft">Merbivore soft</option>
+                  <option value="twilight">Twilight</option>
+                  <option value="tomorrow_night">Tomorrow night</option>
+                </select>`);
+    topicsList.append(themes);
+  }
+
+  // transform the DOM here
   function transformDOM() {
 
     titleText = $('title')[0].innerText;
@@ -323,7 +342,7 @@ $(document).ready(function() {
       var hash = window.decodeURIComponent(window.location.hash);
       var topicIndex = 0;
       if (hash.length > 0) {
-        $.each(topics, function( ti, t) {
+        $.each(topics, function (ti, t) {
           if ('#' + t.id == hash) {
             topicIndex = ti;
             return false;
@@ -337,7 +356,7 @@ $(document).ready(function() {
     setCurrentTopic(findTopicIndexFromHash());
 
     // navigate to a topic when the history changes
-    window.addEventListener("popstate", function(e) {
+    window.addEventListener("popstate", function (e) {
       setCurrentTopic(findTopicIndexFromHash());
     });
 
@@ -360,7 +379,7 @@ $(document).ready(function() {
 
     // find the topic in our topics array
     var topicIndex = -1;
-    $.each(topics, function(ti, t) {
+    $.each(topics, function (ti, t) {
       if (t.id == topicId) {
         topicIndex = ti;
         return false;
@@ -380,7 +399,7 @@ $(document).ready(function() {
     else {                        // exercise completed
       var sectionIndex = -1;
       var sectionId = jqSection.attr('id');
-      $.each(topic.sections, function(si, s ) {
+      $.each(topic.sections, function (si, s) {
         if (s.id == sectionId) {
           sectionIndex = si;
           return false;
@@ -415,19 +434,19 @@ $(document).ready(function() {
       sectionSkippedId = exerciseElement[0].id;
     }
     else {  // error
-      console.log('section ' + $(exerciseElement).selector.split('"')[1] +' not found');
+      console.log('section ' + $(exerciseElement).selector.split('"')[1] + ' not found');
       return;
     }
 
 
     var topicIndex = -1;
-    $.each(topics, function( ti, topic) {
+    $.each(topics, function (ti, topic) {
       if (sectionSkippedId == topic.id) {
         topicIndex = ti;
         topic.topicCompleted = true;
         return false;
       }
-      $.each(topic.sections, function( si, section) {
+      $.each(topic.sections, function (si, section) {
         if (sectionSkippedId == section.id) {
           topicIndex = ti;
           section.skipped = true;
@@ -449,10 +468,10 @@ $(document).ready(function() {
   handleLocationHash();
 
   // initialize components within tutorial.onInit event
-  tutorial.onInit(function() {
+  tutorial.onInit(function () {
 
     // handle progress events
-    tutorial.onProgress(function(progressEvent) {
+    tutorial.onProgress(function (progressEvent) {
       if (progressEvent.event === "section_completed")
         sectionCompleted(progressEvent.element);
       else if (progressEvent.event === "section_skipped")
