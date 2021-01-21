@@ -1063,7 +1063,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     }
 
 
-    //console.log("BASE64: " + b64Utf8("Y29uc3QgaHR0cCA9IHJlcXVpcmUoJ2h0dHAnKTsgY29uc3QgaG9zdG5hbWUgPSAnMC4wLjAuMCc7IGNvbnN0IHBvcnQgPSAzMDAwOyBjb25zdCBzZXJ2ZXIgPSBodHRwLmNyZWF0ZVNlcnZlcigocmVxLCByZXMpID0+IHsgIHJlcy5zdGF0dXNDb2RlID0gMjAwOyAgcmVzLnNldEhlYWRlcignQ29udGVudC1UeXBlJywgJ3RleHQvcGxhaW4nKTsgIHJlcy5lbmQoJ0hlbGxvIFdvcmxkJyk7fSk7ICBzZXJ2ZXIubGlzdGVuKHBvcnQsIGhvc3RuYW1lLCAoKSA9PiB7ICBjb25zb2xlLmxvZyhgU2VydmVyIHJ1bm5pbmcgYXQgaHR0cDovLyR7aG9zdG5hbWV9OiR7cG9ydH0vYCk7fSk7"));
 
 
     // create submit answer button if checks are enabled
@@ -1222,46 +1221,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
   });
 };
-
-//Decode base64 -> tekst
-var b64Utf8 = function (niz) {
-  return decodeURIComponent(
-    Array.prototype.map
-      .call(atob(niz), (znak) => {
-        return "%" + ("00" + znak.charCodeAt(0).toString(16)).slice(-2);
-      })
-      .join("")
-  );
-}
-
-var server = "192.168.1.74";
-
-var languages = function () {
-  var fileDiv = $(button.parentElement.parentElement.parentElement);
-  var serverIP = fileDiv.attr("data-serverIP");
-  console.log(serverIP);
-
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function () {
-    console.log("ODGOVOR " + this.readyState);
-    if (this.readyState == 4) {
-      // Typical action to be performed when the document is ready:
-      //var languages = JSON.parse(xhttp.responseText);
-      // console.log("POŽENI " + languages[0][1]);
-      console.log("POŽENI " + this.status + ", " + this.responseText);
-      if (xhttp.responseText)
-        return JSON.parse(xhttp.responseText);
-
-      return "";
-    }
-  };
-  xhttp.open("GET", "http://" + serverIP + "/jobe/index.php/restapi/languages", true);
-  xhttp.send();
-
-  // console.log("POŽENI " + document.getElementsByClassName("btn-tutorial-run-js").length);
-  // console.log("POŽENI " + exercise.attr('data-lines'));
-  //console.log("POŽENI " + exercise.attr('data-caption'));
-}
 
 var sendFile = function (button, fileName, serverIP, label) {
   // We get reservation data from local storage and we pass them with request
