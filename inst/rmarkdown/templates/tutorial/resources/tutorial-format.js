@@ -291,7 +291,6 @@ $(document).ready(function () {
 
   // Add element with themes
   function addThemesSelect(topicsList) {
-    console.log("ADD THEMES: ");
     // var topicsList = document.getElementsByClassName("topicsList")[0];
     var themes = $(`<label for="themes">Theme</label>
                 <select id="themes" onchange="changeTheme(this.value)">

@@ -902,11 +902,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       return "tutorial-exercise-" + label + "-" + suffix;
     }
 
-    console.log("EXERCISE");
-    console.log(exerciseType + ", " + serverIP + ", " + exerciseName);
-    // exercise.addClass("tabcontent");
-    // exercise.append(exercise);
-
     // when we receive focus hide solutions in other exercises
     exercise.on('focusin', function () {
       $('.btn-tutorial-solution').each(function () {
@@ -944,9 +939,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     input_div.attr('id', create_id('input'));
 
     /********************************************* */
-    // var fileLabel = label;
-    console.log("IME NALOGE: " + caption);
-    // var isExerciseJS = ['app_js', 'index_html', 'styles_css', 'script_js'].find(a =>a.includes(label));
     var isExerciseJS = exerciseType == "js";
     var isAppJS = caption == 'app.js' && isExerciseJS;
     if (isAppJS && serverIP != "")
@@ -954,7 +946,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     else if (!isAppJS && isExerciseJS && serverIP != "")
       addFileTab(exerciseName, caption, label, serverIP);
     /********************************************* */
-    console.log("LOLEK BOLEK " + isExerciseJS + ", " + isAppJS);
 
     // creating heading
     if (isExerciseJS)
@@ -962,12 +953,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     else
       var panel_heading = $('<div class="panel-heading tutorial-panel-heading"></div>');
 
-
-    console.log("JA NE " + isExerciseJS);
-    // If it is JS exercise
-    // if (isExerciseJS)
-    //   panel_heading.text(label.split("-")[2].replace('_', '.'));
-    // else
     panel_heading.text(caption);
     input_div.append(panel_heading);
 
@@ -976,7 +961,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     input_div.append(panel_body);
 
 
-    console.log(isExerciseJS);
     // function to add a submit button
     function add_submit_button(icon, style, text, check, isRunButton, onClick) {
       var runClass = "";
@@ -984,57 +968,11 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
       if (isRunButton)
         runClass = "btn-tutorial-run";
 
-      // if (text == 'Run code' && isExerciseJS && serverIP != "") {
-      //   runClass = "";
-      //   onClick = `onclick="runJSCode(this, '${serverIP}')"`;
-      // }
-      // else if (text == 'Send file') {
-      //   onClick = `onclick="sendFile(this, '${caption}', '${serverIP}', '${label}')"`;
-      // }
-      // else if (text == 'Get port') {
-      //   runClass = "";
-      //   onClick = `onclick="getFreePort(this, '${serverIP}')"`;
-      // }
-      // else if (text == 'Stop') {
-      //   runClass = "";
-      //   onClick = `onclick="stopExecution(this, '${serverIP}')"`;
-      // }
-
       var button = $(`<a ${onClick} class="btn ${style} btn-xs ${runClass} pull-right"></a>`);
-
-      // // it is JS exercise
-      // if (isExerciseJS) {
-      //   // class that tells inputBinding to bind this button
-      //   var runClass = "btn-tutorial-run";
-
-      //   if (text == 'Run code') {
-      //     var onClick = "";
-      //     // ServerIP is defined, which means that code is executed at JOBE server
-      //     // button doesn't get "runClass", so it is not bound to inputBinding
-      //     if (serverIP != "") {
-      //       runClass = "";
-      //       onClick = `onclick="runJSCode(this, '${serverIP}')"`;
-      //     }
-
-      //     button = $(`<a ${onClick} class="btn ${style} btn-xs ${runClass} pull-right"></a>`);
-      //   }
-      //   else if (text == 'Send file') {
-      //     button = $(`<a onclick="sendFile(this, '${caption}', '${serverIP}', '${label}')" class="btn ${style} btn-xs btn-tutorial-send-file ${runClass} pull-right"></a>`);
-      //   }
-      //   else if (text == 'Get port') {
-      //     button = $(`<a onclick="getFreePort(this, '${serverIP}')"  class="btn ${style} btn-xs btn-tutorial-get-port pull-right"></a>`);
-      //   }
-      //   else if (text == 'Stop') {
-      //     button = $(`<a onclick="stopExecution(this, '${serverIP}')" class="btn ${style} btn-xs btn-tutorial-stop pull-right"></a>`);
-      //   }
-      // }
-      // else {
-      //   button = $('<a class="btn ' + style + ' btn-xs btn-tutorial-run ' + 'pull-right"></a>');
-      // }
-
       button.append($('<i class="fa ' + icon + '"></i>'));
       button.attr('type', 'button');
       button.append(' ' + text);
+
       var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       var title = text;
       if (!check && text == 'Run code')
@@ -1398,14 +1336,9 @@ function stopExecution(button, serverIP) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
-    console.log("credentials");
     bootbox.alert("Before you can send file, you need to reserve port.");
     return;
   }
-
-  // var fileDiv = $(button.parentElement.parentElement.parentElement);
-  // var serverIP = fileDiv.attr("data-serverIP");
-  console.log(serverIP);
 
   // Add spinner and disable button
   var spinner = 'fa-spinner fa-spin fa-fw';
@@ -1435,7 +1368,6 @@ function stopExecution(button, serverIP) {
       }
       else {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
-        // alert("JOBE sandbox is not available at the moment! Try again later!");
       }
 
     }
@@ -1444,11 +1376,7 @@ function stopExecution(button, serverIP) {
 
   xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/stop", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
-  // If there is no apiKEy in local storage, then apiKey == null
-  // If it is empty - apiKey == ""
-  // if (apiKey != "" && apiKey != null) {
   xhttp.setRequestHeader("X-API-KEY", apiKey);
-  // }
   xhttp.send(credentials);
 }
 
@@ -1458,18 +1386,11 @@ var getFreePort = function (button, serverIP) {
     bootbox.alert("API KEY is missing!");
     return;
   }
-  console.log(serverIP);
 
   // Add spinner and disable button
   var spinner = 'fa-spinner fa-spin fa-fw';
-  // console.log(button.children[0]);
   var runIcon = button.children[0];
-  // $(runIcon).removeClass(button.getAttribute('data-icon'));
-  // $(runIcon).addClass(spinner);
-  // $(button).addClass('disabled');
   buttonExecutionStart(button, runIcon, spinner);
-
-  console.log(button.parentElement);
 
   var xhttp = new XMLHttpRequest();
 
@@ -1479,7 +1400,6 @@ var getFreePort = function (button, serverIP) {
 
     // We get FREE PORT
     if (this.readyState == 4) {
-      console.log(xhttp.responseText);
       var orodnaVrstica = button.parentElement;
 
       // Delete element with port if it exists
@@ -1489,13 +1409,7 @@ var getFreePort = function (button, serverIP) {
         list[0].parentNode.removeChild(list[0]);
 
       // Button to initial state
-      // $(runIcon).removeClass(spinner);
-      // $(button).removeClass('disabled');
-      // $(runIcon).addClass(button.getAttribute('data-icon'));
       buttonExecutionEnd(button, runIcon, spinner);
-
-      console.log("POŽENI " + this.status);
-      console.log(xhttp.responseText);
 
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
@@ -1511,19 +1425,6 @@ var getFreePort = function (button, serverIP) {
         // We get FREE PORT
         else {
           // GET PORT
-          // port = JSON.parse(xhttp.responseText).port.toString();
-          console.log(port);
-          console.log(orodnaVrstica.getElementsByClassName("portNumber"));
-          console.log(orodnaVrstica.children);
-
-
-
-          // var htmlPort = document.createElement("span");
-          // htmlPort.innerHTML = "PORT: " + port;
-          // htmlPort.className = "pull-right portNumber";
-          // htmlPort.id = "portNumber";
-          // orodnaVrstica.appendChild(htmlPort);
-          //save to local storage
           addPortToLocalStorage(port, jobeUser, randomValue);
 
           // We add HTML element with PORT
@@ -1532,7 +1433,6 @@ var getFreePort = function (button, serverIP) {
       }
       else {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
-        // alert("JOBE sandbox is not available at the moment! Try again later!");
       }
 
     }
@@ -1591,11 +1491,6 @@ function addPortHtml() {
 }
 
 function addPortToLocalStorage(port, jobeUser, randomValue) {
-  //če je potekel čas,
-  // var trenutniPort = JSON.parse(window.localStorage.getItem('port'));
-  // if (trenutniPort.expiry <= new Date().getTime())
-  //   window.localStorage.removeItem('port');
-
   var objStorage = {
     jobeUser: jobeUser,
     port: port,
@@ -1605,19 +1500,7 @@ function addPortToLocalStorage(port, jobeUser, randomValue) {
   window.localStorage.setItem('credentials', JSON.stringify(objStorage));
 }
 
-// function checkPortExpired(caption) {
-//   var isPortValid = true;
-//   var trenutniPort = JSON.parse(window.localStorage.getItem('port-' + caption));
-//   if (trenutniPort.expiry <= new Date().getTime()) {
-//     isPortValid = false;
-//     window.localStorage.removeItem('port-' + caption);
-//   }
-
-//   return isPortValid;
-// }
-
-
-// // Get ApiKey from local storage and fill all inputs with it
+// Get ApiKey from local storage and fill all inputs with it
 function fillInputsWithApiKey() {
   var apiKey = window.localStorage.getItem("apiKey");
   // nastavimo vsem inputom isti api key
@@ -1626,20 +1509,6 @@ function fillInputsWithApiKey() {
     allApiKeyInputs[i].value = apiKey;
   }
 }
-
-// iz local storage prebere shranjeno vrednost in jo vpiše v inpute
-// function preberiAPortVHtml() {
-//   var credentials = window.localStorage.getItem("credentials");
-//   if (credentials != null) {
-//     var port = credentials.port;
-
-//     // nastavimo vsem 
-//     var allApiKeyInputs = document.getElementsByClassName("apiKey");
-//     for (var i = 0; i < allApiKeyInputs.length; i++) {
-//       allApiKeyInputs[i].value = apiKey;
-//     }
-//   }
-// }
 
 // save API KEY to all input fields for API KEY and save it to LOCAL STORAGE
 // Called when "Save" button next to api key input field is pressed 
@@ -1717,7 +1586,6 @@ function openOutTab(button, label, exerciseName, serverIP) {
       classNameShow = "webpageDiv";
       break;
   }
-  // classNameHide = button.innerHTML == "Output" ? "webpageDiv" : "tutorial-exercise-server-output";
 
   // Hide other tabs
   exercise = $('[data-label="' + label + '"]')[0];
@@ -2057,126 +1925,6 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
   }
 
   // register a shiny input binding for code editors
-  // var exerciseInputBinding2 = new Shiny.InputBinding();
-  // $.extend(exerciseInputBinding2, {
-
-  //   find: function (scope) {
-  //     console.log(scope);
-  //     // console.log($(scope).find('.tutorial-exercise-code-editor-js'));
-
-  //     // document.getElementsByClassName("example");
-  //     return $(scope).find('.tutorial-exercise-code-editor-js');
-  //   },
-
-  //   getValue: function (el) {
-  //     console.log("getValue - INPUT 2 " + exerciseLabel(el));
-  //     var serverIP = $(thiz.$exerciseContainer(el)[0]).attr("data-serverIP");
-
-  //     // return null if we haven't been clicked and this isn't a restore
-  //     if (!this.clicked && !this.restore)
-  //       return null;
-
-  //     // value object to return
-  //     var value = {};
-
-  //     // get the label
-  //     value.label = exerciseLabel(el);
-
-  //     // get the code from the editor
-  //     var editor = ace.edit($(el).attr('id'));
-  //     // value.code = editor.getSession().getValue();
-
-  //     // ct$eval("` + editor.getSession().getValue() + `")`;
-  //     // var myFunction = new Function("a", "b", "return a * b");  var x = myFunction(4, 3);
-  //     var button = thiz.$exerciseContainer(el).find('.btn-tutorial-send-file')[0];
-  //     var fileName = $(thiz.$exerciseContainer(el)).attr("data-caption");
-  //     // We defined server IP attribute, so code will be executed on JOBE server
-  //     if (serverIP != "") {
-  //       sendFile(editor.getSession().getValue(), button, fileName, serverIP);
-  //       value.code = null;
-  //     }
-  //     else
-  //       value.code = `ct <- V8::new_context()
-  //                     ct$eval('${editor.getSession().getValue()}')`;
-
-  //     // get the preserved chunk options (if any)
-  //     var options_script = thiz.$exerciseContainer(el).find('script[data-opts-chunk="1"]');
-  //     if (options_script.length == 1)
-  //       value.options = JSON.parse(options_script.text());
-  //     else
-  //       value.options = {};
-
-  //     // restore flag
-  //     value.restore = this.restore;
-
-  //     // get any setup, solution, or check chunks
-
-  //     // setup
-  //     var label = exerciseLabel(el);
-  //     if (value.options["exercise.setup"])
-  //       value.setup = thiz.$exerciseSupportCode(value.options["exercise.setup"]);
-  //     else
-  //       value.setup = thiz.$exerciseSupportCode(label + "-setup");
-
-  //     // solution
-  //     value.solution = thiz.$exerciseSupportCode(label + "-solution");
-
-  //     // check
-  //     if (this.check) {
-  //       value.code_check = thiz.$exerciseSupportCode(label + "-code-check");
-  //       value.check = thiz.$exerciseCheckCode(label);
-  //     }
-
-  //     // some randomness to ensure we re-execute on button clicks
-  //     value.timestamp = new Date().getTime();
-
-  //     // return the value
-  //     return value;
-  //   },
-
-  //   subscribe: function (el, callback) {
-  //     console.log("getValue - SUBSCRIBE 2");
-  //     // console.log(el);
-  //     var binding = this;
-  //     this.runButtons(el).on('click.exerciseInputBinding2', function (ev) {
-  //       binding.restore = false;
-  //       binding.clicked = true;
-  //       binding.check = ev.target.hasAttribute('data-check');
-  //       console.log(ev);
-  //       callback(true);
-  //     });
-  //     $(el).on('restore.exerciseInputBinding2', function (ev, options) {
-  //       binding.restore = true;
-  //       binding.clicked = false;
-  //       binding.check = options.check;
-  //       callback(true);
-  //     });
-  //   },
-
-  //   unsubscribe: function (el) {
-  //     this.runButtons(el).off('.exerciseInputBinding2');
-  //   },
-
-  //   runButtons: function (el) {
-  //     var exercise = thiz.$exerciseContainer(el);
-  //     console.log("RUN BUTTONS");
-  //     console.log(exercise);
-  //     console.log(exercise[0].querySelectorAll('.btn-tutorial-send-file, .btn-tutorial-run-js'));
-  //     console.log(exercise.find('.btn-tutorial-send-file'));
-  //     return $(exercise[0].querySelectorAll('.btn-tutorial-send-file, .btn-tutorial-run-js'));
-  //     // return exercise.find('.btn-tutorial-send-file');
-  //   },
-
-  //   restore: false,
-  //   clicked: false,
-  //   check: false
-  // });
-  // Shiny.inputBindings.register(exerciseInputBinding2, 'tutorial.exerciseInput2');
-  //Shiny.inputBindings.setPriority("tutorial.exerciseInput2", 10);
-
-
-
-  // register a shiny input binding for code editors
   var exerciseInputBinding = new Shiny.InputBinding();
   $.extend(exerciseInputBinding, {
 
@@ -2185,11 +1933,6 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
     },
 
     getValue: function (el) {
-      var exercise = $(thiz.$exerciseContainer(el)[0]);
-      var serverIP = exercise.attr("data-serverIP");
-      var fileName = exercise.attr("data-caption");
-      var exerciseType = exercise.attr("data-type");
-
       // return null if we haven't been clicked and this isn't a restore
       if (!this.clicked && !this.restore)
         return null;
@@ -2215,7 +1958,6 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
       value.restore = this.restore;
 
       // get any setup, solution, or check chunks
-
       // setup
       var label = exerciseLabel(el);
       if (value.options["exercise.setup"])
@@ -2240,7 +1982,6 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
     },
 
     subscribe: function (el, callback) {
-      console.log("getValue - SUBSCRIBE 1");
       var binding = this;
       this.runButtons(el).on('click.exerciseInputBinding', function (ev) {
         binding.restore = false;
