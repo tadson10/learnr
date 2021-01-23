@@ -1,6 +1,7 @@
 
 # inline execution evaluator
 inline_evaluator <- function(expr, timelimit) {
+  print("EVALUATOR: inline_evaluator")
 
   result <- NULL
 
@@ -35,7 +36,7 @@ inline_evaluator <- function(expr, timelimit) {
 
 # forked execution evaluator
 forked_evaluator <- function(expr, timelimit) {
-
+  print("EVALUATOR: forked_evaluator")
   # closure members
   job <- NULL
   start_time <- NULL
