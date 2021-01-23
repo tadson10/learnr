@@ -9,7 +9,7 @@ setup_exercise_handler <- function(exercise_rx, session) {
 #
 
 options(tutorial.exercise.evaluator.onstart = function(pid) {
-  print("ON START - APPARMOR")
+  print(paste0("ON START - APPARMOR ", pid) )
   # import RAppArmor
   require(RAppArmor, quietly = TRUE)
 
@@ -28,7 +28,7 @@ options(tutorial.exercise.evaluator.onstart = function(pid) {
 })
 
 options(tutorial.exercise.evaluator.oncleanup = function(pid) {
-  print("ON CLEANUP - APPARMOR")
+  print(paste0("ON CLEANUP - APPARMOR ", pid) )
   
   # import RAppArmor
   require(RAppArmor, quietly = TRUE)

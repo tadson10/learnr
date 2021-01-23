@@ -24,7 +24,7 @@ BugReports: https://github.com/rstudio/learnr/issues
 Imports: utils, parallel, withr, rappdirs, rprojroot, jsonlite,
         htmltools (>= 0.3.5), htmlwidgets, evaluate, knitr (>= 1.14),
         markdown, shiny (>= 1.0), rmarkdown (>= 1.12.0), ellipsis (>=
-        0.2.0.1), checkmate, renv (>= 0.8.0)
+        0.2.0.1), checkmate, renv (>= 0.8.0), V8
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
