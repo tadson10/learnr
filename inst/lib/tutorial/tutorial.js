@@ -1078,7 +1078,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
     // activate the ace editor
     var editor = thiz.$attachAceEditor(code_id, code);
-    // console.log(editor.session);
 
     // get setup_code (if any)
     var setup_code = null;
@@ -1130,7 +1129,6 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     // mange ace height as the document changes
     var updateAceHeight = function () {
       var lines = exercise.attr('data-lines');
-      // console.log(lines + ', ' + exercise.attr('data-caption'));
       if (lines && (lines > 0)) {
         editor.setOptions({
           minLines: lines,
@@ -1227,11 +1225,7 @@ var sendFile = function (button, fileName, serverIP, label) {
   }
 
   console.log(body);
-  // If there is no apiKEy in local storage, then apiKey == null
-  // If it is empty - apiKey == ""
-  if (apiKey != "" && apiKey != null) {
-    xhr.setRequestHeader("X-API-KEY", apiKey);
-  }
+  xhr.setRequestHeader("X-API-KEY", apiKey);
   xhr.send(JSON.stringify(body));
 }
 
@@ -1299,8 +1293,10 @@ var runJSCode = function (button, serverIP) {
   var body = {
     "run_spec": {
       "language_id": "nodejs",
-      "sourcefilename": "app.js",
-      "timelimit": timelimit ? timelimit : null
+      "sourcefilename": "app",
+      "parameters": {
+        "cputime": timelimit ? timelimit : 10
+      }
     }
   };
 
@@ -1308,11 +1304,7 @@ var runJSCode = function (button, serverIP) {
     jQuery.extend(body.run_spec, credentials);
 
   console.log(body);
-  // If there is no apiKEy in local storage, then apiKey == null
-  // If it is empty - apiKey == ""
-  if (apiKey != "" && apiKey != null) {
-    xhr.setRequestHeader("X-API-KEY", apiKey);
-  }
+  xhr.setRequestHeader("X-API-KEY", apiKey);
   xhr.send(JSON.stringify(body));
 }
 
@@ -1445,18 +1437,12 @@ var getFreePort = function (button, serverIP) {
 
   xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/free_ports", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
-  // If there is no apiKEy in local storage, then apiKey == null
-  // If it is empty - apiKey == ""
-  if (apiKey != "" && apiKey != null) {
-    xhttp.setRequestHeader("X-API-KEY", apiKey);
-  }
-  // else
+  xhttp.setRequestHeader("X-API-KEY", apiKey);
   xhttp.send(credentials);
 }
 
 // Function to change theme for all editors
 function changeTheme(theme) {
-  console.log("CHANGE THEME: " + theme);
   var editorDivs = document.getElementsByClassName("tutorial-exercise-code-editor");
   for (var i = 0; i < editorDivs.length; i++) {
     var editor = ace.edit(editorDivs[i].id);
@@ -1482,7 +1468,6 @@ function addPortHtml() {
 
       var orodnaVrstica = toolbars[i];
       orodnaVrstica.appendChild(htmlPort);
-      // document.getElementsByClassName("toolbar").appendChild(htmlPort);
     }
   }
 
