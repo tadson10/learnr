@@ -6,7 +6,7 @@
 #
 
 options(tutorial.exercise.evaluator.onstart = function(pid) {
-  print("ON START - APPARMOR")
+
   # import RAppArmor
   require(RAppArmor, quietly = TRUE)
 
@@ -25,7 +25,6 @@ options(tutorial.exercise.evaluator.onstart = function(pid) {
 })
 
 options(tutorial.exercise.evaluator.oncleanup = function(pid) {
-  print("ON CLEANUP - APPARMOR")
   
   # import RAppArmor
   require(RAppArmor, quietly = TRUE)

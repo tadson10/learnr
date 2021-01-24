@@ -53,6 +53,7 @@ forked_evaluator <- function(expr, timelimit) {
 
   # default cleanup function
   default_cleanup <- function(pid) {
+    print("default_cleanup")
     system(paste("kill -9", pid))
   }
 
