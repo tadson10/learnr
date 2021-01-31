@@ -9,18 +9,23 @@ inline_evaluator <- function(expr, timelimit) {
 
       # setTimeLimit -- if the timelimit is exceeeded an error will occur
       # during knit which we will catch and format within evaluate_exercise
-      setTimeLimit(elapsed = timelimit, transient = TRUE);
-      on.exit(setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE), add = TRUE);
 
+      # check if RAppArmor is installed, so we can use profile for security reasons
+      a <- installed.packages()
+      packages <- a[, 1]
+      isInstalled <- is.element("RAppArmor", packages)
+
+      if (is_windows() || is_macos() || !isInstalled) {
+        setTimeLimit(elapsed = timelimit, transient = TRUE);
+        on.exit(setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE), add = TRUE);
+      }
       # execute and capture result
       result <<- tryCatch(
         expr = {
         if (!is_windows() && !is_macos()) {
-          # check if RAppArmor is installed, so we can use profile for security reasons
-          a <- installed.packages()
-          packages <- a[, 1]
 
-          if (is.element("RAppArmor", packages))
+
+          if (isInstalled)
             unix::eval_safe(expr, profile = "r-user", timeout = timelimit, priority = 10, rlimits = c(nproc = 1000, as = 50 * 1024 * 1024 * 1024))
           else
             unix::eval_safe(expr, timeout = timelimit, priority = 10, rlimits = c(nproc = 1000, as = 50 * 1024 * 1024 * 1024))
@@ -34,7 +39,7 @@ inline_evaluator <- function(expr, timelimit) {
         #Check for timeout error
         pattern <- gettext("timeout reached", domain = "R")
         if (length(grep(pattern, e$message)) > 0) {
-          err <- "Error: Your code ran longer than the permitted time limit for this exercise."
+          err <- timeout_error_message()
         }
         error_result(err)
        }
