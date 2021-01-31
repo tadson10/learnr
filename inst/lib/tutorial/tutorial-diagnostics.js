@@ -231,11 +231,10 @@ var TutorialDiagnostics = function (tutorial) {
   };
 
   var ensureInitialized = function (editor) {
-
     if (editor.$diagnosticsInitialized)
       return;
 
-    if (!editor.tutorial.diagnostics)
+    if (!editor.tutorial.diagnostics || editor.getSession().$modeId != 'ace/mode/r')
       return;
 
     // register handlers
@@ -255,7 +254,7 @@ var TutorialDiagnostics = function (tutorial) {
   };
 
   this.$onChange = function (data) {
-    if (!this.tutorial.diagnostics)
+    if (!this.tutorial.diagnostics || this.getSession().$modeId != 'ace/mode/r')
       return;
 
     clearTimeout(this.$diagnosticsTimerId);

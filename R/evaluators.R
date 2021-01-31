@@ -2,7 +2,6 @@
 # inline execution evaluator
 inline_evaluator <- function(expr, timelimit) {
   print("EVALUATOR: inline_evaluator")
-
   result <- NULL
 
   list(
@@ -12,11 +11,17 @@ inline_evaluator <- function(expr, timelimit) {
       # during knit which we will catch and format within evaluate_exercise
       setTimeLimit(elapsed=timelimit, transient=TRUE);
       on.exit(setTimeLimit(cpu=Inf, elapsed=Inf, transient=FALSE), add = TRUE);
-#print(expr)
 
       # execute and capture result
       result <<- tryCatch(
-        force(expr),
+        expr = {
+            if (!is_windows() && !is_macos()) {
+              library(RAppArmor)
+              eval.secure(expr, profile="r-user", timeout=timelimit)
+            }
+            else
+              force(expr)
+        },
         error = function(e) {
           error_result(e$message)
         }
@@ -28,7 +33,6 @@ inline_evaluator <- function(expr, timelimit) {
     },
 
     result = function() {
-      #print(result)
       result
     }
   )

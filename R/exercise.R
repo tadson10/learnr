@@ -1,7 +1,7 @@
 
 # run an exercise and return HTML UI
 setup_exercise_handler <- function(exercise_rx, session) {
-  
+
   # Note: To use the "r-user" AppArmor profile you should add the following line
   # to /etc/apparmor.d/rapparmor.d/r-user:
   #
@@ -51,30 +51,29 @@ setup_exercise_handler <- function(exercise_rx, session) {
       timelimit <- getOption("tutorial.exercise.timelimit", default = 30)
 
     # limit maximum execution time
-    if(timelimit > 60)
+    if (timelimit > 60)
       timelimit <- 60
 
     # get exercise evaluator factory function (allow replacement via global option)
     evaluator_factory <- getOption("tutorial.exercise.evaluator", default = NULL)
     if (is.null(evaluator_factory)) {
-      if (!is_windows() && !is_macos())
-        evaluator_factory <- forked_evaluator
-      else
-        evaluator_factory <- inline_evaluator
+      #if (!is_windows() && !is_macos())
+      # evaluator_factory <- forked_evaluator
+      #else
+      evaluator_factory <- inline_evaluator
     }
 
     # create a new environment parented by the global environment
     # transfer all of the objects in the server_envir (i.e. setup and data chunks)
     envir <- duplicate_env(server_envir, parent = globalenv())
     # create exercise evaluator
-    
-    # Check if it is JS exercise
-    if(exercise$options$exercise.type == 'js') {
-      code_copy <- exercise$code
 
+    # Check if it is JS exercise
+    if (exercise$options$exercise.type == 'js') {
+      code_copy <- exercise$codeWithComments
       # Check if serverIP is defined 
       # If it IS, code is not executed here but at JOBE server, so we remove the code
-      if(exercise$options$exercise.serverIP == "" && exercise$options$exercise.caption == "app.js") {
+      if (exercise$options$exercise.serverIP == "" && exercise$options$exercise.caption == "app.js") {
         exercise$code <- gsub("\\\\", "\\\\\\\\", exercise$code)
         exercise$code <- gsub("'", "\\\\'", exercise$code)
         exercise$code <- paste0('ct <- V8::new_context()\n',
@@ -114,7 +113,7 @@ setup_exercise_handler <- function(exercise_rx, session) {
         )
 
         # assign reactive result value
-        rv$triggered <- isolate({ rv$triggered + 1})
+        rv$triggered <- isolate({ rv$triggered + 1 })
         rv$result <- result$html_output
 
         # destroy the observer
@@ -213,12 +212,12 @@ evaluate_exercise <- function(exercise, envir) {
   # hack the pager function so that we can print help
   # http://stackoverflow.com/questions/24146843/including-r-help-in-knitr-output
   pager <- function(files, header, title, delete.file) {
-    all.str <- do.call("c",lapply(files,readLines))
-    cat(all.str,sep="\n")
+    all.str <- do.call("c", lapply(files, readLines))
+    cat(all.str, sep = "\n")
   }
-  orig_width <- options(width=70)
+  orig_width <- options(width = 70)
   on.exit(options(orig_width), add = TRUE)
-  orig_pager <- options(pager=pager)
+  orig_pager <- options(pager = pager)
   on.exit(options(orig_pager), add = TRUE)
 
   # restore knitr options and hooks after knit
@@ -321,7 +320,7 @@ evaluate_exercise <- function(exercise, envir) {
   }, error = function(e) {
     # make the time limit error message a bit more friendly
     err <<- e$message
-    pattern <- gettext("reached elapsed time limit", domain="R")
+    pattern <- gettext("reached elapsed time limit", domain = "R")
     if (regexpr(pattern, err) != -1L) {
       err <<- timeout_error_message()
     }
@@ -366,9 +365,9 @@ evaluate_exercise <- function(exercise, envir) {
   if (checker_fn_does_not_exist)
     checker <- function(...) { NULL }
 
-  # call the checker
-  tryCatch({
-    checker_feedback <- checker(
+    # call the checker
+    tryCatch({
+      checker_feedback <- checker(
       label = exercise$label,
       user_code = exercise$code,
       solution_code = exercise$solution,
@@ -378,49 +377,49 @@ evaluate_exercise <- function(exercise, envir) {
       envir_prep = envir_prep,
       last_value = last_value
     )
-  }, error = function(e) {
-    err <<- e$message
-    message("Error occured while evaluating 'exercise.checker'. Error:\n", e)
-  })
-  if (!is.null(err)) {
-    return(error_result("Error occured while evaluating 'exercise.checker'."))
-  }
+    }, error = function(e) {
+      err <<- e$message
+      message("Error occured while evaluating 'exercise.checker'. Error:\n", e)
+    })
+    if (!is.null(err)) {
+      return(error_result("Error occured while evaluating 'exercise.checker'."))
+    }
 
-  # validate the feedback
-  feedback_validated(checker_feedback)
+    # validate the feedback
+    feedback_validated(checker_feedback)
 
-  # amend output with feedback as required
-  feedback_html <-
+    # amend output with feedback as required
+    feedback_html <-
     if (!is.null(checker_feedback)) {
       feedback_as_html(checker_feedback)
     } else {
       NULL
     }
 
-  if (
+    if (
     # if the last value was invisible
     !last_value_is_visible &&
     # if the checker function exists
     !checker_fn_does_not_exist
   ) {
-    # works with NULL feedback
-    feedback_html <- htmltools::tagList(feedback_html, invisible_feedback())
-  }
-
-  if (!is.null(feedback_html)) {
-    # if no feedback, append invisible_feedback
-    feedback_location <- checker_feedback$location %||% "append"
-    if (feedback_location == "append") {
-      html_output <- htmltools::tagList(html_output, feedback_html)
-    } else if (feedback_location == "prepend") {
-      html_output <- htmltools::tagList(feedback_html, html_output)
-    } else if (feedback_location == "replace") {
-      html_output <- feedback_html
+      # works with NULL feedback
+      feedback_html <- htmltools::tagList(feedback_html, invisible_feedback())
     }
-  }
 
-  # return a list with the various results of the expression
-  list(
+    if (!is.null(feedback_html)) {
+      # if no feedback, append invisible_feedback
+      feedback_location <- checker_feedback$location %||% "append"
+      if (feedback_location == "append") {
+        html_output <- htmltools::tagList(html_output, feedback_html)
+      } else if (feedback_location == "prepend") {
+        html_output <- htmltools::tagList(feedback_html, html_output)
+      } else if (feedback_location == "replace") {
+        html_output <- feedback_html
+      }
+    }
+
+    # return a list with the various results of the expression
+    list(
     feedback = checker_feedback,
     error_message = NULL,
     html_output = html_output
@@ -468,7 +467,7 @@ filter_dependencies <- function(dependencies) {
       TRUE
     }
     else {
-      ! is.null(tryCatch(
+      !is.null(tryCatch(
         rprojroot::find_root(rprojroot::is_r_package,
                              path = dependency$src$file),
         error = function(e) NULL

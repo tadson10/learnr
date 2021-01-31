@@ -839,8 +839,10 @@ Tutorial.prototype.$attachAceEditor = function (target, code) {
   var mode = "r";
   var editor = ace.edit(target);
 
-  var exercise = this.$exerciseContainer(editor.container);//$('.tutorial-exercise[data-label="' + editor.tutorial.label + '"]');
+  var exercise = this.$exerciseContainer(editor.container);
   var type = exercise.attr("data-type");
+  var completion = exercise.attr("data-completion");
+  var diagnostics = exercise.attr("data-diagnostics");
   if (type == "js") {
     var fileExt = exercise.attr("data-caption").split(".")[1];
     switch (fileExt) {
@@ -860,18 +862,18 @@ Tutorial.prototype.$attachAceEditor = function (target, code) {
   editor.renderer.setDisplayIndentGuides(false);
   editor.setTheme("ace/theme/textmate");
   editor.$blockScrolling = Infinity;
-  editor.session.setMode("ace/mode/" + mode);
+  if (type != 'js' || diagnostics > 0)
+    editor.session.setMode("ace/mode/" + mode);
   editor.session.getSelection().clearSelection();
   editor.setValue(code, -1);
 
-  if (type == "js") {
+  if (type == "js" && completion > 0) {
     editor.setOptions({
       enableBasicAutocompletion: true,
       enableSnippets: true,
       enableLiveAutocompletion: true
     });
   }
-
   return editor;
 };
 
@@ -1932,6 +1934,12 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
       var editor = ace.edit($(el).attr('id'));
       value.code = editor.getSession().getValue();
 
+      if (editor.getSession().$modeId == 'ace/mode/javascript') {
+        value.codeWithComments = value.code;
+        var uncomment = /((\/\*[\s\S]*?\*\/|\/\/.*))/g;
+        value.code = value.code.replace(uncomment, '');
+      }
+
       // get the preserved chunk options (if any)
       var options_script = thiz.$exerciseContainer(el).find('script[data-opts-chunk="1"]');
       if (options_script.length == 1)
@@ -2223,7 +2231,7 @@ Tutorial.prototype.$restoreSubmissions = function (submissions) {
 
       // get code and checked status
       var label = id;
-      var code = submission.data.code;
+      var code = submission.data.code == null ? "" : submission.data.code;
       var checked = submission.data.checked;
 
       thiz.$logTiming("restoring-exercise-" + label);

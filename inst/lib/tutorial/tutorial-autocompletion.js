@@ -151,7 +151,7 @@ function TutorialCompleter(tutorial) {
   var ensureInitialized = function (editor) {
 
     // bail if completions are disabled for this editor
-    if (!editor.tutorial.completion)
+    if (!editor.tutorial.completion || editor.session.$modeId != 'ace/mode/r')
       return;
 
     if (editor.$autocompletionInitialized)
@@ -190,7 +190,7 @@ function TutorialCompleter(tutorial) {
       return;
 
     // bail if completions are disabled for this editor
-    if (!editor.tutorial.completion)
+    if (!editor.tutorial.completion || editor.session.$modeId != 'ace/mode/r')
       return;
 
     // ensure completion engine initialized
@@ -212,8 +212,8 @@ function TutorialCompleter(tutorial) {
     if (editor !== null)
       ensureInitialized(editor);
 
-    // bail if completions are disabled for this editor
-    if (editor !== null && !editor.tutorial.completion)
+    // bail if completions are disabled for this editor or mode is not "ace/mode/r"
+    if (editor !== null && (!editor.tutorial.completion || editor.session.$modeId != 'ace/mode/r'))
       return;
 
     var keys = new KeyCombination(event);
