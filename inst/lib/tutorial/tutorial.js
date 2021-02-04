@@ -989,8 +989,8 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
         // When exercise is NOT JS
         // When exersise IS JS and
-        //                          - JOBE server IP is defined and button text is "Send file"
-        //                          - JOBE server IP is NOT defined and button text is "Run code"
+        //       - JOBE server IP is defined and button text is "Send file"
+        //       - JOBE server IP is NOT defined and button text is "Run code"
         if (!isExerciseJS || (isExerciseJS && ((serverIP != "" && text == 'Send file') || (serverIP == "" && text == 'Run code')))) {
           thiz.$removeSolution(exercise);
           if (serverIP == "" && isExerciseJS) //to add/remove spinner from button
@@ -1032,6 +1032,11 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
       onClick = `onclick="sendFile(this, '${caption}', '${serverIP}', '${label}')"`;
       add_submit_button("fa-floppy-o", "btn-success", "Send file", false, true, onClick);
+
+      if (isAppJS) {
+        onClick = `onclick="sendAllFiles('${exerciseName}')"`;
+        add_submit_button("fa-floppy-o", "btn-success", "Send all", false, false, onClick);
+      }
 
       if (isAppJS) {
         onClick = `onclick="getFreePort(this, '${serverIP}')"`;
@@ -1154,11 +1159,26 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
     exercise.parents('.section').on('shown', function () {
       editor.resize(true);
     });
-
-
-
   });
 };
+
+var sendAllFiles = function (exerciseName) {
+  // We get reservation data from local storage and we pass them with request
+  var apiKey = window.localStorage.getItem("apiKey");
+  var credentials = window.localStorage.getItem("credentials");
+  if (credentials == null || apiKey == null) {
+    bootbox.alert("Before you can send files, you need to reserve port.");
+    return;
+  }
+
+  // get all files for sthis exercise
+  var files = $('[data-id="' + exerciseName + '"]');
+  console.log(files);
+  for (var i = 0; i < files.length; i++) {
+    var button = $(files[i].getElementsByClassName("btn-tutorial-run"))[0];
+    button.click();
+  }
+}
 
 var sendFile = function (button, fileName, serverIP, label) {
   // We get reservation data from local storage and we pass them with request

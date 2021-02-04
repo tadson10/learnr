@@ -23,8 +23,7 @@ inline_evaluator <- function(expr, timelimit) {
       result <<- tryCatch(
         expr = {
         if (!is_windows() && !is_macos()) {
-
-
+          # if RAppArmor is installed we can use "r-user" profile for more security
           if (isInstalled)
             unix::eval_safe(expr, profile = "r-user", timeout = timelimit, priority = 10, rlimits = c(nproc = 1000, as = 50 * 1024 * 1024 * 1024))
           else
