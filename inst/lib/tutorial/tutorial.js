@@ -1173,7 +1173,6 @@ var sendAllFiles = function (exerciseName) {
 
   // get all files for sthis exercise
   var files = $('[data-id="' + exerciseName + '"]');
-  console.log(files);
   for (var i = 0; i < files.length; i++) {
     var button = $(files[i].getElementsByClassName("btn-tutorial-run"))[0];
     button.click();
@@ -1228,7 +1227,6 @@ var sendFile = function (button, fileName, serverIP, label) {
   xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
   xhr.onreadystatechange = function () {
-    console.log("PUT FILE " + this.responseText + ", " + this.status);
     if (this.readyState === XMLHttpRequest.DONE) {
       buttonExecutionEnd(button, runIcon, spinner);
       // We got response from JOBE sandbox
@@ -1236,17 +1234,15 @@ var sendFile = function (button, fileName, serverIP, label) {
         // Request finished. Do processing here.
         console.log("PUT FILE DONE" + this.responseText + ", " + this.status);
         var response = JSON.parse(this.responseText);
-        var message = response.message ? response.message : response;
         // Show error response to user
         if (this.status != 201)
-          bootbox.alert(message);
+          bootbox.alert(response);
       }
       else
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
     }
   }
 
-  console.log(body);
   xhr.setRequestHeader("X-API-KEY", apiKey);
   xhr.send(JSON.stringify(body));
 }
@@ -1291,10 +1287,9 @@ var runJSCode = function (button, serverIP) {
         // Show output to user
         output.innerHTML = response.stdout;
 
-        var message = response.message ? response.message : response;
         // Error occurred
         if (this.status != 200)
-          bootbox.alert(message);
+          bootbox.alert(response);
         else {
           // Show error to user
           var regTerminated = /\/var\/www\/html\/jobe\/application\/libraries\/..\/..\/runguard\/runguard: warning: command terminated with signal 9/g;
@@ -1325,7 +1320,6 @@ var runJSCode = function (button, serverIP) {
   if (credentials != null)
     jQuery.extend(body.run_spec, credentials);
 
-  console.log(body);
   xhr.setRequestHeader("X-API-KEY", apiKey);
   xhr.send(JSON.stringify(body));
 }
@@ -1375,10 +1369,9 @@ function stopExecution(button, serverIP) {
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
         var response = JSON.parse(this.responseText);
-        var message = response.message ? response.message : response;
         // Error occurred
         if (this.status != 201)
-          bootbox.alert(message);
+          bootbox.alert(response);
       }
       else {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
@@ -1427,20 +1420,18 @@ var getFreePort = function (button, serverIP) {
 
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
-        var port = JSON.parse(xhttp.responseText).port;
-        var jobeUser = JSON.parse(xhttp.responseText).jobeUser;
-        var randomValue = JSON.parse(xhttp.responseText).randomValue;
-
         // We don't get free port - all ports are used
-        if (!port || !jobeUser || !randomValue) {
-          var message = JSON.parse(xhttp.responseText).message;
+        if (this.status != 200) {
+          var message = JSON.parse(xhttp.responseText);
           alert(message);
         }
         // We get FREE PORT
         else {
-          // GET PORT
-          addPortToLocalStorage(port, jobeUser, randomValue);
+          var port = JSON.parse(xhttp.responseText).port;
+          var jobeUser = JSON.parse(xhttp.responseText).jobeUser;
+          var randomValue = JSON.parse(xhttp.responseText).randomValue;
 
+          addPortToLocalStorage(port, jobeUser, randomValue);
           // We add HTML element with PORT
           addPortHtml();
         }
@@ -1448,7 +1439,6 @@ var getFreePort = function (button, serverIP) {
       else {
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
       }
-
     }
   };
 
