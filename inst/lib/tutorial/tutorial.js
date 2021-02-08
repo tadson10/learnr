@@ -1232,7 +1232,6 @@ var sendFile = function (button, fileName, serverIP, label) {
       // We got response from JOBE sandbox
       if (xhr.responseText) {
         // Request finished. Do processing here.
-        console.log("PUT FILE DONE" + this.responseText + ", " + this.status);
         var response = JSON.parse(this.responseText);
         // Show error response to user
         if (this.status != 201)
@@ -1280,8 +1279,6 @@ var runJSCode = function (button, serverIP) {
       buttonExecutionEnd(button, runIcon, spinner);
       if (xhr.responseText) {
         // Request finished. Do processing here.
-        console.log("RUN CODE DONE" + this.responseText + ", " + this.status);
-        console.log(JSON.parse(this.responseText));
         var response = JSON.parse(this.responseText);
 
         // Show output to user
@@ -1362,10 +1359,6 @@ function stopExecution(button, serverIP) {
       // Button to initial state
       buttonExecutionEnd(button, runIcon, spinner);
 
-      console.log("STOP " + this.status);
-      console.log(xhttp.responseText);
-
-
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
         var response = JSON.parse(this.responseText);
@@ -1379,7 +1372,6 @@ function stopExecution(button, serverIP) {
 
     }
   }
-
 
   xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/stop", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
@@ -1403,11 +1395,9 @@ var getFreePort = function (button, serverIP) {
 
   // Wait for the answer
   xhttp.onreadystatechange = function () {
-    console.log("ODGOVOR " + this.readyState);
-
     // We get FREE PORT
     if (this.readyState == 4) {
-      var orodnaVrstica = button.parentElement;
+      var toolbar = button.parentElement;
 
       // Delete element with port if it exists
       var list = document.getElementsByClassName("portNumber");
@@ -1478,21 +1468,17 @@ function addPortHtml() {
       htmlPort.className = "pull-right portNumber";
       htmlPort.id = "portNumber";
 
-      var orodnaVrstica = toolbars[i];
-      orodnaVrstica.appendChild(htmlPort);
+      var toolbar = toolbars[i];
+      toolbar.appendChild(htmlPort);
     }
   }
-
-
-
 }
 
 function addPortToLocalStorage(port, jobeUser, randomValue) {
   var objStorage = {
     jobeUser: jobeUser,
     port: port,
-    randomValue: randomValue,
-    expiry: new Date().getTime() + 1000 * 60 * 60
+    randomValue: randomValue
   };
   window.localStorage.setItem('credentials', JSON.stringify(objStorage));
 }

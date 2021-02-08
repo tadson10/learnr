@@ -1,21 +1,22 @@
 
 # inline execution evaluator
 inline_evaluator <- function(expr, timelimit) {
-  print("EVALUATOR: inline_evaluator")
   result <- NULL
 
   list(
     start = function() {
 
-      # setTimeLimit -- if the timelimit is exceeeded an error will occur
-      # during knit which we will catch and format within evaluate_exercise
+
 
       # check if RAppArmor is installed, so we can use profile for security reasons
       a <- installed.packages()
       packages <- a[, 1]
       isInstalled <- is.element("RAppArmor", packages)
 
-      if (is_windows() || is_macos() || !isInstalled) {
+      # setTimeLimit -- if the timelimit is exceeeded an error will occur
+      # during knit which we will catch and format within evaluate_exercise
+      # setTimeLimit doesn't work well with executing JS code in R environment, so we will use this only on WIN and MAC
+      if (is_windows() || is_macos()) {
         setTimeLimit(elapsed = timelimit, transient = TRUE);
         on.exit(setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE), add = TRUE);
       }
@@ -57,7 +58,6 @@ inline_evaluator <- function(expr, timelimit) {
 
 # forked execution evaluator
 forked_evaluator <- function(expr, timelimit) {
-  print("EVALUATOR: forked_evaluator")
   # closure members
   job <- NULL
   start_time <- NULL
