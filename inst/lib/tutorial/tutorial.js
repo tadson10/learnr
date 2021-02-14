@@ -1354,7 +1354,6 @@ function stopExecution(button, serverIP) {
 
   // Wait for the answer
   xhttp.onreadystatechange = function () {
-    // We get FREE PORT
     if (this.readyState == 4) {
       // Button to initial state
       buttonExecutionEnd(button, runIcon, spinner);
@@ -1363,7 +1362,7 @@ function stopExecution(button, serverIP) {
       if (xhttp.responseText) {
         var response = JSON.parse(this.responseText);
         // Error occurred
-        if (this.status != 201)
+        if (this.status != 200)
           bootbox.alert(response);
       }
       else {

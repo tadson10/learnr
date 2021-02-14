@@ -8,11 +8,50 @@ runtime: shiny_prerendered
 library(learnr)
 knitr::opts_chunk$set(echo = FALSE)
 ```
-
-
 ## Topic 1
 
-### Exercise 
+### Exercise without JOBE server
+
+*Here's a simple exercise with an empty code chunk provided for entering the answer.*
+
+Write the Javascript function to calculate the n-th Fibonacci number:
+
+```{js simpleJS, exercise=TRUE,  exercise.timelimit = 2, exercise.eval=TRUE, exercise.cap = "app.js", exercise.id="firstJSExercise", exercise.type = "js"}
+
+```   
+
+## Topic 2
+
+### Exercise with JOBE server
+
+*Here's a simple exercise with some prepopulated code. To specify the PORT on which server should run, use process.env.PORT. Otherwise there could be problems while trying to run server.*
+
+Now write simple Express server:
+
+```{js express1,exercise=TRUE, exercise.id = "expressExercise", exercise.timelimit = 30, exercise.type = "js", exercise.lines = 50, exercise.cap = "app.js", exercise.eval = FALSE, exercise.serverIP = "111.111.111.111"}  
+const express = require('express'); 
+const app = express(); 
+
+app.listen(process.env.PORT, () => console.log(`This app is listening on port `  + process.env.PORT));
+``` 
+
+```{r express2,exercise=TRUE, exercise.id = "expressExercise", exercise.type = "js", exercise.lines = 50, exercise.cap = "index.html", exercise.serverIP = "111.111.111.111"} 
+ 
+```
+
+```{r express3, exercise=TRUE, exercise.id = "expressExercise", exercise.type = "js", exercise.lines = 50, exercise.cap = "styles.css", exercise.serverIP = "111.111.111.111"} 
+ 
+```
+
+```{js express4, exercise=TRUE, exercise.id = "expressExercise", exercise.type = "js", exercise.timelimit = 10, exercise.lines = 50, exercise.cap = "script.js", exercise.serverIP = "111.111.111.111"} 
+function yourFunction() {
+	console.log("called yourFunction");
+}       
+``` 
+
+## Topic 3
+
+### Exercise - R
 
 *Here's a simple exercise with an empty code chunk provided for entering the answer.*
 
@@ -22,7 +61,7 @@ Write the R code required to add two plus two:
 
 ```
 
-### Exercise with Code
+### Exercise with Code - R
 
 *Here's an exercise with some prepopulated code as well as `exercise.lines = 5` to provide a bit more initial room to work.*
 
@@ -34,7 +73,7 @@ add <- function() {
 }
 ```
 
-## Topic 2
+## Topic 4
 
 ### Exercise with Hint
 
