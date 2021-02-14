@@ -1929,8 +1929,8 @@ Tutorial.prototype.$initializeExerciseEvaluation = function () {
       var editor = ace.edit($(el).attr('id'));
       value.code = editor.getSession().getValue();
 
+      value.codeWithComments = value.code;
       if (editor.getSession().$modeId == 'ace/mode/javascript') {
-        value.codeWithComments = value.code;
         var uncomment = /((\/\*[\s\S]*?\*\/|\/\/.*))/g;
         value.code = value.code.replace(uncomment, '');
       }
