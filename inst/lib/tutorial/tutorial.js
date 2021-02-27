@@ -1410,9 +1410,13 @@ var getFreePort = function (button, serverIP) {
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
         // We don't get free port - all ports are used
+
         if (this.status != 200) {
           var message = JSON.parse(xhttp.responseText);
-          alert(message);
+          if (this.status == 403)
+            alert(message.error);
+          else
+            alert(message);
         }
         // We get FREE PORT
         else {
@@ -1535,6 +1539,7 @@ function refreshWebpageDiv(serverIP, port) {
 
 // Toolbar for output tabs - only called for app.js file
 function addOutputTabs(exerciseName, label, serverIP) {
+  serverIP = serverIP.split(":")[0];
   var tabs = $(`<div id="${exerciseName}-output-tabs" class="tab outputTab">                
                             <button class="tablinks btnOutput" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Output</button>
                             <button class="tablinks btnOutput" onclick="openOutTab(this, '${label}', '${exerciseName}', null)">Error</button>
