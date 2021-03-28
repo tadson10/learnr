@@ -1040,7 +1040,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
 
       if (isAppJS) {
         onClick = `onclick="getFreePort(this, '${serverIP}')"`;
-        add_submit_button("fa-search", "btn-success", "Get port", false, false, onClick);
+        add_submit_button("fa-search", "btn-success", "Authenticate", false, false, onClick);
       }
     }
 

@@ -45,6 +45,40 @@ install_knitr_hooks <- function() {
     }
   }
 
+  # helper function to grab the raw knitr chunk associated with a chunk label
+  get_knitr_chunk <- function(label) {
+    # Note: we directly call the knitr function in this case because we do not
+    # need to pass expressions which required delayed evaluation.
+    knitr::knit_code$get(label)
+  }
+
+  get_reveal_solution_option <- function(solution_opts) {
+    exercise_chunk <- get_knitr_chunk(sub("-solution$", "", solution_opts$label))
+    if (is.null(exercise_chunk)) {
+      stop("Can not find exercise chunk for solution: `", solution_opts$label, "`")
+    }
+
+    # these are unevaluated options at this point
+    exercise_opts <- attr(exercise_chunk, "chunk_opts")
+    # get explicit opts on solution chunk since solution_opts was merged
+    # with the global knitr chunk options
+    sol_opts_user <- attr(get_knitr_chunk(solution_opts$label), "chunk_opts")
+
+    # Determine if we should reveal the solution using...
+    reveal_solution <-
+    # 1. the option explicitly set on the solution chunk
+    eval(sol_opts_user$exercise.reveal_solution, envir = knitr::knit_global()) %||%
+    # 2. the option explicitly set on the exercise chunk
+    eval(exercise_opts$exercise.reveal_solution, envir = knitr::knit_global()) %||%
+    # 3. the global knitr chunk option
+    solution_opts$exercise.reveal_solution %||%
+    # 4. the global R option
+    getOption("tutorial.exercise.reveal_solution", TRUE)
+
+    isTRUE(reveal_solution)
+  }
+
+
   # hook to turn off evaluation/highlighting for exercise related chunks
   knitr::opts_hooks$set(tutorial = function(options) {
 
@@ -82,6 +116,11 @@ install_knitr_hooks <- function() {
       options$include <- TRUE
       options$eval <- FALSE
       options$highlight <- FALSE
+    }
+
+    if (is_exercise_support_chunk(options, type = "solution")) {
+      # only print solution if exercise.reveal_solution is TRUE
+      options$echo <- get_reveal_solution_option(options)
     }
 
     # if this is an exercise setup chunk then eval it if the corresponding
@@ -214,8 +253,18 @@ install_knitr_hooks <- function() {
     # handle exercise support chunks (setup, solution, and check)
     else if (is_exercise_support_chunk(options)) {
 
-      # output wrapper div
-      exercise_wrapper_div(suffix = "support")
+      # setup and checking code (-setup, -code-check, and -check) are included in exercise cache
+      # do not send the setup and checking code to the browser
+
+      # send hint and solution to the browser
+      # these are visibly displayed in the UI
+      if (is_exercise_support_chunk(options, type = c("hint", "hint-\\d+"))) {
+        exercise_wrapper_div(suffix = "support")
+      } else if (is_exercise_support_chunk(options, type = "solution")) {
+        if (get_reveal_solution_option(options)) {
+          exercise_wrapper_div(suffix = "support")
+        }
+      }
     }
 
 
@@ -272,10 +321,10 @@ check_empty_value <- function(variable) {
 verify_tutorial_chunk_js <- function() {
   if (!isTRUE(getOption("knitr.in.progress"))) return()
 
-  caption <- knitr::opts_current$get('exercise.cap') #ifelse(is.null(knitr::opts_current$get('exercise.cap')), "", knitr::opts_current$get('exercise.cap')) 
-  type <- knitr::opts_current$get('exercise.type') #ifelse(is.null(knitr::opts_current$get('exercise.type')), "", knitr::opts_current$get('exercise.type')) 
-  exerciseId <- knitr::opts_current$get('exercise.id') #ifelse(is.null(knitr::opts_current$get('exercise.id')), "", knitr::opts_current$get('exercise.id')) 
-  serverIP <- knitr::opts_current$get('exercise.serverIP') #ifelse(is.null(knitr::opts_current$get('exercise.serverIP')), "", knitr::opts_current$get('exercise.serverIP')) 
+  caption <- knitr::opts_current$get('exercise.cap')
+  type <- knitr::opts_current$get('exercise.type')
+  exerciseId <- knitr::opts_current$get('exercise.id')
+  serverIP <- knitr::opts_current$get('exercise.serverIP')
   label <- knitr::opts_current$get('label')
   completion <- knitr::opts_current$get('exercise.completion') %||% 1 > 0
   diagnostics <- knitr::opts_current$get('exercise.diagnostics') %||% 1 > 0
@@ -286,8 +335,8 @@ verify_tutorial_chunk_js <- function() {
   }
 
   # Type 'js', but no caption or id
-  if (!check_empty_value(type) && type == "js" && (check_empty_value(caption) || check_empty_value(exerciseId))) {
-    stop("Code chunks with type 'js' must have an `exercise.cap` and an `exercise.id`. Problematic chunk with label: \"", label, "\".",
+  if (!check_empty_value(type) && type == "js" && (check_empty_value(caption) || (!check_empty_value(serverIP) && check_empty_value(exerciseId)))) {
+    stop("Code chunks with type 'js' must have an `exercise.cap` and an `exercise.id` (if `exercise.serverIP` is defined). Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
 
@@ -309,4 +358,31 @@ verify_tutorial_chunk_js <- function() {
     stop("Code chunks with type 'js' can't have `diagnostics` set to FALSE and `completion` set to TRUE. Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
+
+  if (caption == "app.js" && !check_empty_value(exerciseId))
+    check_duplicate_file_names(exerciseId)
+
+}
+
+check_duplicate_file_names <- function(exerciseId) {
+  exCaptions <- list()
+  exLabels <- list()
+  # get all knitr chunks
+  chunks <- knitr::knit_code$get()
+  x <- 1
+  for (i in chunks) {
+    # Loop through chunks and save those with `exercise.id = exerciseId`
+    attr <- attributes(i)
+    if (isTRUE(attr$chunk_opts$exercise) && !check_empty_value(attr$chunk_opts$exercise.serverIP) && exerciseId == attr$chunk_opts$exercise.id) {
+      exCaptions[x] <- attr$chunk_opts$exercise.cap
+      exLabels[x] <- attr$chunk_opts$label
+      x <- x + 1
+    }
+  }
+
+  index <- anyDuplicated(exCaptions)
+  if (index != 0)
+    stop("Code chunks with exercise.type='js', exercise.serverIP defined and same exercise.id must have unique captions.
+          Problematic chunk with exercise.id: \"", exerciseId, "\" and label: \"", exLabels[index], "\".",
+         call. = FALSE)
 }
