@@ -74,10 +74,12 @@ setup_exercise_handler <- function(exercise_rx, session) {
       # Check if serverIP is defined 
       # If it IS, code is not executed here but at JOBE server, so we remove the code
       if (exercise$options$exercise.serverIP == "" && exercise$options$exercise.caption == "app.js") {
+        libraries <- 'ct <- V8::new_context()\n'
+        if (exercise$options$exercise.libraryPath != "")
+          libraries <- paste0(libraries, import_libraries(exercise$options$exercise.libraryPath))
         exercise$code <- gsub("\\\\", "\\\\\\\\", exercise$code)
         exercise$code <- gsub("'", "\\\\'", exercise$code)
-        exercise$code <- paste0('ct <- V8::new_context()\n',
-                              'ct$eval(\'', exercise$code, '\')')
+        exercise$code <- paste0(libraries, 'ct$eval(\'', exercise$code, '\')')
       }
       else {
         # we don't want the code to be executed here, we just want to save it
@@ -130,6 +132,19 @@ setup_exercise_handler <- function(exercise_rx, session) {
     rv$triggered
     req(rv$result)
   })
+}
+
+# Import JavaScript libraries to V8 context
+import_libraries <- function(directory) {
+  code_import <- ""
+  file_list <- list.files(directory)
+  for (i in 1:length(file_list)) {
+    # print(paste0(i, ", ", directory, "\\", file_list[i]))
+    # code_import <- paste0(code_import, "ct$source(system.file(\"", paste0(directory, "/", file_list[i]), "\", package=\"V8\"))\n ")
+    code_import <- paste0(code_import, "ct$source(\"", paste0(directory, "/", file_list[i]), "\")\n ")
+
+  }
+  code_import
 }
 
 # evaluate an exercise and return a list containing output and dependencies

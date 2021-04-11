@@ -5,9 +5,6 @@ inline_evaluator <- function(expr, timelimit) {
 
   list(
     start = function() {
-
-
-
       # check if RAppArmor is installed, so we can use profile for security reasons
       a <- installed.packages()
       packages <- a[, 1]

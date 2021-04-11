@@ -238,6 +238,7 @@ install_knitr_hooks <- function() {
         preserved_options$exercise.type <- ifelse(is.null(options$exercise.type), "r", options$exercise.type)
         preserved_options$exercise.serverIP <- ifelse(is.null(options$exercise.serverIP), "", options$exercise.serverIP)
         preserved_options$exercise.caption <- ifelse(is.null(options$exercise.cap), "Code", options$exercise.cap)
+        preserved_options$exercise.libraryPath <- ifelse(is.null(options$exercise.libraryPath), "", options$exercise.libraryPath)
 
         print(jsonlite::toJSON(preserved_options, auto_unbox = TRUE))
         # script tag with knit options for this chunk
@@ -328,34 +329,41 @@ verify_tutorial_chunk_js <- function() {
   label <- knitr::opts_current$get('label')
   completion <- knitr::opts_current$get('exercise.completion') %||% 1 > 0
   diagnostics <- knitr::opts_current$get('exercise.diagnostics') %||% 1 > 0
+  libraryPath <- knitr::opts_current$get('exercise.libraryPath')
+
 
   if (!check_empty_value(type) && type != "js") {
-    stop("exercise.type can only be 'js' or empty. Problematic chunk with label: \"", label, "\".",
+    stop("`exercise.type` can only be 'js' or empty. Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
 
   # Type 'js', but no caption or id
   if (!check_empty_value(type) && type == "js" && (check_empty_value(caption) || (!check_empty_value(serverIP) && check_empty_value(exerciseId)))) {
-    stop("Code chunks with type 'js' must have an `exercise.cap` and an `exercise.id` (if `exercise.serverIP` is defined). Problematic chunk with label: \"", label, "\".",
+    stop("Code chunks with `exercise.type` = 'js' must have an `exercise.cap` and an `exercise.id` (if `exercise.serverIP` is defined). Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
 
   # No type defined or type != "js"
   # Defined: id or serverIP
   if ((check_empty_value(type) || type != "js") && (!check_empty_value(exerciseId) || !check_empty_value(serverIP))) {
-    stop("Code chunks with exercise.type empty or not equal to `js` can't have options id and serverIP defined. Problematic chunk with label: \"", label, "\".",
+    stop("Code chunks with `exercise.type` empty or not equal to `js` can't have options `exercise.id` and `exercise.serverIP` defined. Problematic chunk with label: \"", label, "\".",
+         call. = FALSE)
+  }
+
+  if (!check_empty_value(libraryPath) && !check_empty_value(serverIP)) {
+    stop("Code chunks with `exercise.serverIP` defined, can't have `exercise.libraryPath` set. Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
 
   # Type 'js' and no serverIP, but caption != "app.js"
   if (!check_empty_value(type) && type == "js" && check_empty_value(serverIP) && caption != "app.js") {
-    stop("Code chunks with type 'js' and no JOBE serverIP defined, can only have caption = 'app.js'. Problematic chunk with label: \"", label, "\".",
+    stop("Code chunks with `exercise.type` 'js' and no JOBE `exercise.serverIP` defined, can only have `exercise.caption` = 'app.js'. Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
 
   # Type 'js', diagnostics set to FALSE and completion set to TRUE
   if (!check_empty_value(type) && type == "js" && !is.null(diagnostics) && !isTRUE(diagnostics) && (is.null(completion) || isTRUE(completion))) {
-    stop("Code chunks with type 'js' can't have `diagnostics` set to FALSE and `completion` set to TRUE. Problematic chunk with label: \"", label, "\".",
+    stop("Code chunks with type 'js' can't have `exercise.diagnostics` set to FALSE and `exercise.completion` set to TRUE. Problematic chunk with label: \"", label, "\".",
          call. = FALSE)
   }
 
