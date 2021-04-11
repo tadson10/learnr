@@ -345,9 +345,14 @@ verify_tutorial_chunk_js <- function() {
 
   # No type defined or type != "js"
   # Defined: id or serverIP
-  if ((check_empty_value(type) || type != "js") && (!check_empty_value(exerciseId) || !check_empty_value(serverIP))) {
-    stop("Code chunks with `exercise.type` empty or not equal to `js` can't have options `exercise.id` and `exercise.serverIP` defined. Problematic chunk with label: \"", label, "\".",
-         call. = FALSE)
+  if ((check_empty_value(type) || type != "js")) {
+    if((!check_empty_value(exerciseId) || !check_empty_value(serverIP)))
+      stop("Code chunks with `exercise.type` empty or not equal to `js` can't have options `exercise.id` and `exercise.serverIP` defined. Problematic chunk with label: \"", label, "\".",
+           call. = FALSE)
+
+    if(!check_empty_value(libraryPath))
+      stop("Only code chunks with `exercise.type` = 'js' can have option `exercise.libraryPath` set. Problematic chunk with label: \"", label, "\".",
+           call. = FALSE)
   }
 
   if (!check_empty_value(libraryPath) && !check_empty_value(serverIP)) {
