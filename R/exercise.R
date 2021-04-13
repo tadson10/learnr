@@ -139,10 +139,7 @@ import_libraries <- function(directory) {
   code_import <- ""
   file_list <- list.files(directory)
   for (i in 1:length(file_list)) {
-    # print(paste0(i, ", ", directory, "\\", file_list[i]))
-    # code_import <- paste0(code_import, "ct$source(system.file(\"", paste0(directory, "/", file_list[i]), "\", package=\"V8\"))\n ")
     code_import <- paste0(code_import, "ct$source(\"", paste0(directory, "/", file_list[i]), "\")\n ")
-
   }
   code_import
 }

@@ -332,11 +332,6 @@ verify_tutorial_chunk_js <- function() {
   libraryPath <- knitr::opts_current$get('exercise.libraryPath')
 
 
-  if (!check_empty_value(type) && type != "js") {
-    stop("`exercise.type` can only be 'js' or empty. Problematic chunk with label: \"", label, "\".",
-         call. = FALSE)
-  }
-
   # Type 'js', but no caption or id
   if (!check_empty_value(type) && type == "js" && (check_empty_value(caption) || (!check_empty_value(serverIP) && check_empty_value(exerciseId)))) {
     stop("Code chunks with `exercise.type` = 'js' must have an `exercise.cap` and an `exercise.id` (if `exercise.serverIP` is defined). Problematic chunk with label: \"", label, "\".",
@@ -344,14 +339,10 @@ verify_tutorial_chunk_js <- function() {
   }
 
   # No type defined or type != "js"
-  # Defined: id or serverIP
+  # Defined: id or serverIP or libraryPath
   if ((check_empty_value(type) || type != "js")) {
-    if((!check_empty_value(exerciseId) || !check_empty_value(serverIP)))
-      stop("Code chunks with `exercise.type` empty or not equal to `js` can't have options `exercise.id` and `exercise.serverIP` defined. Problematic chunk with label: \"", label, "\".",
-           call. = FALSE)
-
-    if(!check_empty_value(libraryPath))
-      stop("Only code chunks with `exercise.type` = 'js' can have option `exercise.libraryPath` set. Problematic chunk with label: \"", label, "\".",
+    if ((!check_empty_value(exerciseId) || !check_empty_value(serverIP) || !check_empty_value(libraryPath)))
+      stop("Code chunks with `exercise.type` empty or not equal to `js` can't have options `exercise.id`, `exercise.serverIP` or `exercise.libraryPath` defined. Problematic chunk with label: \"", label, "\".",
            call. = FALSE)
   }
 
