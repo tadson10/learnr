@@ -1307,7 +1307,7 @@ var runJSCode = function (button, serverIP) {
   var body = {
     "run_spec": {
       "language_id": "nodejs",
-      "sourcefilename": "app",
+      "sourcefilename": "app.js",
       "parameters": {
         "cputime": timelimit ? timelimit : 10
       }
