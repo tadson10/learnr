@@ -1438,7 +1438,7 @@ var getFreePort = function (button, serverIP) {
   // We get reservation data from local storage and we pass them with request
   var apiKey = window.localStorage.getItem("apiKey");
 
-  xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/free_ports", true);
+  xhttp.open("GET", "http://" + serverIP + "/jobe/index.php/restapi/free_ports", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
   xhttp.setRequestHeader("X-API-KEY", apiKey);
   xhttp.send();
