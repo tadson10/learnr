@@ -712,8 +712,6 @@ Tutorial.prototype.$initializeExercises = function () {
 
   // Get ApiKey from local storage and fill all inputs with it
   fillInputsWithApiKey();
-  // We add HTML element with PORT
-  addPortHtml();
   // Simulate click on first tab for every JS exercise
   openFirstTab();
 
@@ -1167,7 +1165,7 @@ var sendAllFiles = function (exerciseName) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
-    bootbox.alert("Before you can send files, you need to reserve port.");
+    bootbox.alert("Before you can send files, you need to authenticate.");
     return;
   }
 
@@ -1184,7 +1182,7 @@ var sendFile = function (button, fileName, serverIP, label) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
-    bootbox.alert("Before you can send file, you need to reserve port.");
+    bootbox.alert("Before you can send file, you need to authenticate.");
     return;
   }
 
@@ -1236,6 +1234,8 @@ var sendFile = function (button, fileName, serverIP, label) {
         // Show error response to user
         if (this.status != 201)
           bootbox.alert(response);
+        else
+          changeBtnColor(button);
       }
       else
         bootbox.alert("JOBE sandbox is not available at the moment! Try again later!");
@@ -1252,7 +1252,7 @@ var runJSCode = function (button, serverIP) {
   var credString = window.localStorage.getItem("credentials");
   var credentials = JSON.parse(credString);
   if (credString == null || apiKey == null) {
-    bootbox.alert("Before you can send file, you need to reserve port.");
+    bootbox.alert("Before you can send file, you need to authenticate.");
     return;
   }
 
@@ -1341,7 +1341,7 @@ function stopExecution(button, serverIP) {
   var apiKey = window.localStorage.getItem("apiKey");
   var credentials = window.localStorage.getItem("credentials");
   if (credentials == null || apiKey == null) {
-    bootbox.alert("Before you can send file, you need to reserve port.");
+    bootbox.alert("Before you can send file, you need to authenticate.");
     return;
   }
 
@@ -1425,8 +1425,7 @@ var getFreePort = function (button, serverIP) {
           var randomValue = JSON.parse(xhttp.responseText).randomValue;
 
           addPortToLocalStorage(port, jobeUser, randomValue);
-          // We add HTML element with PORT
-          addPortHtml();
+          changeBtnColor(button);
         }
       }
       else {
@@ -1438,12 +1437,16 @@ var getFreePort = function (button, serverIP) {
 
   // We get reservation data from local storage and we pass them with request
   var apiKey = window.localStorage.getItem("apiKey");
-  var credentials = window.localStorage.getItem("credentials");
 
   xhttp.open("POST", "http://" + serverIP + "/jobe/index.php/restapi/free_ports", true);
   xhttp.setRequestHeader("Content-Type", "application/json");
   xhttp.setRequestHeader("X-API-KEY", apiKey);
-  xhttp.send(credentials);
+  xhttp.send();
+}
+
+function changeBtnColor(button) {
+  button.style.backgroundColor = "#4CAF50";
+  setTimeout(function () { button.style = null; }, 3000);
 }
 
 // Function to change theme for all editors
@@ -1489,10 +1492,29 @@ function addPortToLocalStorage(port, jobeUser, randomValue) {
 // Get ApiKey from local storage and fill all inputs with it
 function fillInputsWithApiKey() {
   var apiKey = window.localStorage.getItem("apiKey");
-  // nastavimo vsem inputom isti api key
-  var allApiKeyInputs = document.getElementsByClassName("apiKey");
-  for (var i = 0; i < allApiKeyInputs.length; i++) {
-    allApiKeyInputs[i].value = apiKey;
+
+  // Api key is saved in local storage
+  if (apiKey != null) {
+    // Set api key to all inputs
+    var allApiKeyInputs = document.getElementsByClassName("apiKey");
+    for (var i = 0; i < allApiKeyInputs.length; i++) {
+      allApiKeyInputs[i].value = apiKey;
+      allApiKeyInputs[i].disabled = true;
+    }
+    changeBtnDisabled(true);
+  }
+  else {
+    changeBtnDisabled(false);
+  }
+}
+
+function changeBtnDisabled(isSaved) {
+  // disable Save buttons and enable Remove buttons
+  var SaveBtns = document.getElementsByClassName("apiKeySave");
+  var RemoveBtns = document.getElementsByClassName("apiKeyRemove");
+  for (var i = 0; i < SaveBtns.length; i++) {
+    SaveBtns[i].disabled = isSaved;
+    RemoveBtns[i].disabled = !isSaved;
   }
 }
 
@@ -1515,9 +1537,11 @@ function removeApiKey() {
   var allApiKeyInputs = document.getElementsByClassName("apiKey");
   for (var i = 0; i < allApiKeyInputs.length; i++) {
     allApiKeyInputs[i].value = "";
+    allApiKeyInputs[i].disabled = false;
   }
   // local storage
   window.localStorage.removeItem("apiKey");
+  changeBtnDisabled(false);
 }
 
 // create HTML element for API KEY
@@ -1525,8 +1549,8 @@ function addApiKeyHtml() {
   return `<label for="apiKey">API KEY</label>
           <form class="form-inline" style="margin-bottom: 10px;">
             <input type="text" name="apiKey" class="apiKey form-control" style="width: 277px;">
-            <button type="button" class="btn btn-primary btn-sm" onclick="saveApiKey(this)">Save</button>
-            <button type="button" class="btn btn-primary btn-sm" onclick="removeApiKey()">Remove</button>
+            <button type="button" class="btn btn-primary btn-sm apiKeySave" onclick="saveApiKey(this)">Save</button>
+            <button type="button" class="btn btn-primary btn-sm apiKeyRemove" onclick="removeApiKey()">Remove</button>
           </form>`;
 }
 
