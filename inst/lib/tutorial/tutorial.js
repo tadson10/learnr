@@ -1805,6 +1805,7 @@ Tutorial.prototype.$addSolution = function (exercise, panel_heading, editor) {
 
     // handle showing and hiding the popover
     button.on('click', function () {
+      hintIndex = 0;
 
       // record the request
       recordHintRequest(hintIndex);

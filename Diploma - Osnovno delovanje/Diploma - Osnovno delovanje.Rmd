@@ -1,0 +1,99 @@
+---
+title: "Learnr osnovno delovanje"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Tema 1
+
+```{r simpleQuiz}
+x <- 10
+quiz(
+  caption="Kviz",
+  question("Kaj izmed nastetega ni povezano s programskim jezikom JavaScript?",
+    answer("Learnr", correct = TRUE),
+    answer("Express", message = "Express je JavaScript knjižnica."),
+    answer("Shiny", correct = TRUE),
+    answer("Angular"),
+    allow_retry = TRUE,
+    incorrect = "Odgovor ni pravilen.",
+    correct = "Odgovor je pravilen."
+  ),
+  question(sprintf("Če je $x = %s$, katera trditev drzi?", x),
+    answer(sprintf("$\\sqrt{x ^ 2} = 10$"), correct = TRUE, message = "Pravilen odgovor."),
+    answer(sprintf("$x ^ 2 = %d$", x * 2)),
+    answer("$\\sin x = 1$"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE,
+    type = "single"
+  )
+)
+```
+
+### Videoposnetek
+![](https://youtu.be/uVwtVBpw7RQ){width="560" height="315"}
+
+### Interaktivne Shiny komponente
+```{r, echo=FALSE}
+sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 30)
+plotOutput("distPlot1") 
+```
+
+```{r, context="server"}
+output$distPlot1 <- renderPlot({
+  x <- faithful[, 2]  # Old Faithful Geyser data
+  bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  hist(x, breaks = bins, col = 'darkgray', border = 'white')
+})
+```
+
+
+### Vkljucitev slike v interaktivno lekcijo
+
+```{r, out.width = "60%", out.height = "60%", fig.cap = "Opis slike."}
+knitr::include_graphics("images/image.jpg")
+```
+
+## Tema 2
+
+### R naloga z namigom
+
+*Naloga vsebuje namig, ki uporabniku pomaga pri resevanju.*
+
+Izvorno kodo spremeni, tako da vrne prvih 5 vrstic zbirke podatkov *mtcars*:
+
+```{r print-limit, exercise=TRUE, exercise.eval=TRUE, exercise.reveal_solution = TRUE}
+print("Hello World!")
+```
+
+
+
+```{r print-limit-solution}
+head(mtcars, n = 5)
+```
+
+```{r print-limit-hint}
+head(mtcars)
+```
+
+```{r filter, exercise=TRUE}
+# filter the flights table to include only United and American flights
+flights
+```
+
+```{r filter-hint-1}
+filter(flights, ...)
+```
+
+```{r filter-hint-2}
+filter(flights, UniqueCarrier=="AA")
+```
+
+```{r filter-solution, exercise.reveal_solution = TRUE}
+filter(flights, UniqueCarrier=="AA" | UniqueCarrier=="UA")
+```

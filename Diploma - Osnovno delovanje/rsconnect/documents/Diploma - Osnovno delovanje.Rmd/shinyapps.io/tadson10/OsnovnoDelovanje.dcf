@@ -1,0 +1,13 @@
+name: OsnovnoDelovanje
+title: OsnovnoDelovanje
+username:
+account: tadson10
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3910762
+bundleId: 4432798
+url: https://tadson10.shinyapps.io/OsnovnoDelovanje/
+when: 1617620411.02245
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Diploma---Osnovno-delovanje.html
