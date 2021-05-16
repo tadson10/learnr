@@ -1232,6 +1232,7 @@ var sendFile = function (button, fileName, serverIP, label) {
         // Request finished. Do processing here.
         var response = JSON.parse(this.responseText);
         // Show error response to user
+        response = response.error == undefined ? response : response.error;
         if (this.status != 201)
           bootbox.alert(response);
         else
@@ -1283,6 +1284,7 @@ var runJSCode = function (button, serverIP) {
 
         // Show output to user
         output.innerHTML = response.stdout;
+        response = response.error == undefined ? response : response.error;
 
         // Error occurred
         if (this.status != 200)
@@ -1361,6 +1363,7 @@ function stopExecution(button, serverIP) {
       // We got response from JOBE sandbox
       if (xhttp.responseText) {
         var response = JSON.parse(this.responseText);
+        response = response.error == undefined ? response : response.error;
         // Error occurred
         if (this.status != 200)
           bootbox.alert(response);
@@ -1413,6 +1416,7 @@ var getFreePort = function (button, serverIP) {
 
         if (this.status != 200) {
           var message = JSON.parse(xhttp.responseText);
+          message = message.error == undefined ? message : message.error;
           if (this.status == 403)
             alert(message.error);
           else
