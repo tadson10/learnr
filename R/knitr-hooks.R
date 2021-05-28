@@ -377,7 +377,7 @@ check_duplicate_file_names <- function(exerciseId) {
   for (i in chunks) {
     # Loop through chunks and save those with `exercise.id = exerciseId`
     attr <- attributes(i)
-    if (isTRUE(attr$chunk_opts$exercise) && !check_empty_value(attr$chunk_opts$exercise.serverIP) && exerciseId == attr$chunk_opts$exercise.id) {
+    if (isTRUE(attr$chunk_opts$exercise) && !check_empty_value(attr$chunk_opts$exercise.id) && exerciseId == attr$chunk_opts$exercise.id) {
       exCaptions[x] <- attr$chunk_opts$exercise.cap
       exLabels[x] <- attr$chunk_opts$label
       x <- x + 1
