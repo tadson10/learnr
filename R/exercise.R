@@ -48,11 +48,11 @@ setup_exercise_handler <- function(exercise_rx, session) {
     # get timelimit option (either from chunk option or from global option)
     timelimit <- exercise$options$exercise.timelimit
     if (is.null(timelimit))
-      timelimit <- getOption("tutorial.exercise.timelimit", default = 30)
+      timelimit <- getOption("tutorial.exercise.timelimit", default = 3)
 
     # limit maximum execution time
-    if (timelimit > 60)
-      timelimit <- 60
+    if (timelimit > 10)
+      timelimit <- 10
 
     # get exercise evaluator factory function (allow replacement via global option)
     evaluator_factory <- getOption("tutorial.exercise.evaluator", default = NULL)
@@ -352,7 +352,7 @@ evaluate_exercise <- function(exercise, envir) {
                                    quiet = TRUE,
                                    clean = FALSE)
   output <- readLines(output_file, warn = FALSE, encoding = "UTF-8")
-  output <- paste(output, collapse = "\n")
+   output <- paste(output, collapse = "\n")
 
   # capture output as HTML w/ dependencies
   html_output <- htmltools::attachDependencies(

@@ -991,7 +991,7 @@ Tutorial.prototype.$initializeExerciseEditors = function () {
         //       - JOBE server IP is NOT defined and button text is "Run code"
         if (!isExerciseJS || (isExerciseJS && ((serverIP != "" && text == 'Send file') || (serverIP == "" && text == 'Run code')))) {
           thiz.$removeSolution(exercise);
-          if (serverIP == "" && isExerciseJS) //to add/remove spinner from button
+          if (serverIP == "") //to add/remove spinner from button
             thiz.$showExerciseProgress(label, button, true);
         }
       });
